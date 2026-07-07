@@ -102,6 +102,69 @@
   }
   .runner-up b{color:var(--lav); font-family:'Space Grotesk',sans-serif;}
 
+  /* OPTIMIZED PROMPT BOX */
+  .prompt-box{
+    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12);
+    border-radius:12px; padding:16px; margin-bottom:22px;
+  }
+  .prompt-label{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.05em;
+    text-transform:uppercase; color:var(--slate-light); margin-bottom:10px;
+  }
+  #optimizedPromptBox{
+    width:100%; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1);
+    border-radius:8px; color:var(--lav); font-family:'Inter',sans-serif; font-size:14px;
+    padding:12px; resize:vertical; line-height:1.5; margin-bottom:10px;
+  }
+  .copy-btn{
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--coral-soft);
+    background:rgba(255,107,74,0.12); border:none; padding:8px 16px; border-radius:100px; cursor:pointer;
+  }
+
+  /* REVEAL SECTION */
+  .reveal{
+    display:none; margin-top:16px; padding-top:32px; border-top:1px solid rgba(255,255,255,0.08);
+    text-align:center;
+  }
+  .reveal.show{display:block;}
+  .reveal-head{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(20px,3vw,26px);
+    color:var(--lav); line-height:1.25; margin-bottom:14px;
+  }
+  .reveal-copy{color:var(--slate-light); font-size:14.5px; max-width:460px; margin:0 auto 26px;}
+  .reveal-visual{margin-bottom:30px;}
+  .rv-chain{display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:8px; margin-bottom:10px;}
+  .rv-chip{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px;
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+    padding:7px 14px; border-radius:100px; color:var(--slate-light);
+  }
+  .rv-arrow{color:var(--slate-light); font-size:13px;}
+  .rv-down{color:var(--coral); font-size:18px; margin-bottom:8px;}
+  .rv-lineog{
+    display:inline-block; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14px;
+    color:var(--lav); background:rgba(255,107,74,0.14); border:1px solid rgba(255,107,74,0.3);
+    padding:10px 18px; border-radius:10px;
+  }
+  .reveal-cta{
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    border-radius:14px; padding:26px 24px; max-width:440px; margin:0 auto 18px;
+  }
+  .reveal-cta-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; color:var(--lav); margin-bottom:8px;}
+  .reveal-cta-sub{color:var(--slate-light); font-size:13.5px; margin-bottom:18px;}
+  .reveal-form{display:flex; gap:8px; flex-wrap:wrap; justify-content:center;}
+  .reveal-form input{
+    font-family:'Inter',sans-serif; font-size:14px; padding:11px 14px;
+    border:1px solid rgba(255,255,255,0.15); border-radius:100px; background:rgba(0,0,0,0.2);
+    color:var(--lav); min-width:200px;
+  }
+  .reveal-form input::placeholder{color:var(--slate-light);}
+  .reveal-thanks{
+    display:none; margin-top:12px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--mint);
+  }
+  .reveal-thanks.show{display:block;}
+  .learn-more-link{color:var(--coral-soft); text-decoration:none; font-weight:600; font-size:14px;}
+
   .alt-row{
     margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);
   }
@@ -153,7 +216,7 @@
       </button>
     </div>
   </div>
-  <p style="text-align:center; font-size:12.5px; color:var(--slate-light); margin-top:12px;">We measure how this tool is used so we can improve recommendations. We don't sell your prompts, and we don't build advertising profiles from them.</p>
+  <p style="text-align:center; font-size:12.5px; color:var(--slate-light); margin-top:12px;">We measure how this tool is used so we can improve recommendations. We don't sell your prompts, and we don't build advertising profiles from them. <a href="privacy.html" style="color:var(--slate-light); text-decoration:underline;">Read our privacy policy</a>.</p>
 
   <div class="stage">
     <div class="thinking" id="thinking">
@@ -165,9 +228,41 @@
       <div class="verdict-label">Our pick</div>
       <div class="verdict-name" id="verdictName">—</div>
       <p class="verdict-reason" id="verdictReason"></p>
+
+      <div class="prompt-box">
+        <div class="prompt-label">Optimized prompt for <span id="promptModelName">—</span></div>
+        <textarea id="optimizedPromptBox" rows="4"></textarea>
+        <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">Copy</button>
+      </div>
+
       <button class="open-btn" id="openBtn">Open in — →</button>
       <div class="runner-up" id="runnerUp" style="display:none;"></div>
       <div class="alt-row" id="altRow"></div>
+    </div>
+
+    <div class="reveal" id="revealBlock">
+      <div class="reveal-head">Great. You know which AI to use.<br>The harder problem starts tomorrow.</div>
+      <p class="reveal-copy">Every AI remembers its own conversations. None of them remember your work, across all of them.</p>
+      <div class="reveal-visual">
+        <div class="rv-chain">
+          <span class="rv-chip">Claude</span><span class="rv-arrow">→</span>
+          <span class="rv-chip">ChatGPT</span><span class="rv-arrow">→</span>
+          <span class="rv-chip">Gemini</span><span class="rv-arrow">→</span>
+          <span class="rv-chip">Perplexity</span>
+        </div>
+        <div class="rv-down">↓</div>
+        <div class="rv-lineog">LINEOG — one project, one timeline, one trusted source of truth</div>
+      </div>
+      <div class="reveal-cta">
+        <div class="reveal-cta-title">Continue this project in LINEOG</div>
+        <p class="reveal-cta-sub">Be one of the first to help shape the future of cross-AI work.</p>
+        <form class="reveal-form" onsubmit="return joinInterest(event)">
+          <input type="email" id="interestEmail" placeholder="you@example.com" required>
+          <button class="primary" type="submit">Count me in</button>
+        </form>
+        <div class="reveal-thanks" id="interestThanks">You're in, we'll reach out as this takes shape.</div>
+      </div>
+      <a href="lineog.html" class="learn-more-link">See how LINEOG works →</a>
     </div>
 
     <div class="error" id="errorBox"></div>
@@ -178,6 +273,12 @@
     <br>LINEOG gives every AI you use that context, so your work, your decisions, and your facts stay connected over time.
     <br><br>
     <a href="lineog.html" style="color:var(--coral-soft); text-decoration:none; font-weight:600;">See how LINEOG works →</a>
+    <br><br>
+    <span style="font-size:12px;">
+      <a href="privacy.html" style="color:var(--slate-light); text-decoration:none;">Privacy</a>
+      &nbsp;·&nbsp;
+      <a href="terms.html" style="color:var(--slate-light); text-decoration:none;">Terms</a>
+    </span>
   </footer>
 </div>
 
@@ -191,14 +292,47 @@
   };
   const allModels = ["ChatGPT", "Claude", "Gemini", "Perplexity", "Grok"];
 
+  let lastTask = "";
+  let lastRecommended = "";
+
+  function copyPrompt(){
+    const box = document.getElementById('optimizedPromptBox');
+    box.select();
+    navigator.clipboard.writeText(box.value).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const original = btn.textContent;
+      btn.textContent = "Copied";
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    });
+  }
+
+  async function joinInterest(e){
+    e.preventDefault();
+    const email = document.getElementById('interestEmail').value.trim();
+    try{
+      await fetch('/api/interest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, task: lastTask, recommended: lastRecommended })
+      });
+    } catch(err){
+      console.error(err);
+    }
+    document.getElementById('interestThanks').classList.add('show');
+    document.getElementById('interestEmail').value = '';
+    return false;
+  }
+
   async function findMyAI(){
     const task = document.getElementById('taskInput').value.trim();
     const btn = document.getElementById('submitBtn');
     const thinking = document.getElementById('thinking');
     const verdict = document.getElementById('verdict');
+    const revealBlock = document.getElementById('revealBlock');
     const errorBox = document.getElementById('errorBox');
 
     verdict.classList.remove('show','reveal');
+    revealBlock.classList.remove('show');
     errorBox.classList.remove('show');
 
     if(!task){
@@ -227,9 +361,18 @@
       document.getElementById('verdictName').textContent = result.recommended;
       document.getElementById('verdictReason').textContent = result.reason;
 
+      document.getElementById('promptModelName').textContent = result.recommended;
+      document.getElementById('optimizedPromptBox').value = result.optimizedPrompt || task;
+
+      lastTask = task;
+      lastRecommended = result.recommended;
+
       const openBtn = document.getElementById('openBtn');
       openBtn.textContent = `Open in ${result.recommended} →`;
-      openBtn.onclick = () => window.open(links[result.recommended](task), '_blank');
+      openBtn.onclick = () => {
+        const finalPrompt = document.getElementById('optimizedPromptBox').value.trim() || task;
+        window.open(links[result.recommended](finalPrompt), '_blank');
+      };
 
       const ruBox = document.getElementById('runnerUp');
       if(result.runnerUp && result.runnerUp.name){
@@ -249,6 +392,7 @@
 
       verdict.classList.add('show');
       requestAnimationFrame(() => requestAnimationFrame(() => verdict.classList.add('reveal')));
+      revealBlock.classList.add('show');
 
     } catch(err){
       thinking.classList.remove('show');
