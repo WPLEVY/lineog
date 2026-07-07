@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Which AI? — a free tool from LINEOG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plum:#1A1035;
+    --plum-soft:#261A47;
+    --lav:#FAF8FF;
+    --lav-dim:#F0ECFB;
+    --coral:#FF6B4A;
+    --coral-soft:#FF8A6E;
+    --mint:#6BCB9E;
+    --ink:#1B1730;
+    --slate:#6B678A;
+    --slate-light:#A8A3C7;
+    --line: rgba(27,23,48,0.10);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:radial-gradient(circle at 50% 0%, var(--plum-soft) 0%, var(--plum) 55%);
+    min-height:100vh;
+    font-family:'Inter', sans-serif;
+    color:var(--lav);
+    display:flex; flex-direction:column; align-items:center;
+    padding:48px 20px 80px;
+  }
+  .wrap{width:100%; max-width:620px;}
+
+  header{display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:56px;}
+  .mark{width:8px; height:8px; border-radius:50%; background:var(--coral);}
+  .brand{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:var(--slate-light); letter-spacing:0.02em;}
+  .brand b{color:var(--lav);}
+
+  h1{
+    font-family:'Space Grotesk',sans-serif; font-weight:700;
+    font-size:clamp(30px,5vw,44px); text-align:center; letter-spacing:-0.02em;
+    line-height:1.1; margin-bottom:14px;
+  }
+  .sub{text-align:center; color:var(--slate-light); font-size:16px; max-width:460px; margin:0 auto 40px;}
+
+  .input-card{
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    border-radius:16px; padding:8px; transition:border-color .2s ease;
+  }
+  .input-card:focus-within{border-color:var(--coral);}
+  textarea{
+    width:100%; background:transparent; border:none; resize:none;
+    font-family:'Inter',sans-serif; font-size:16px; color:var(--lav);
+    padding:16px 16px 8px; min-height:84px; line-height:1.5;
+  }
+  textarea::placeholder{color:var(--slate-light);}
+  textarea:focus{outline:none;}
+  .input-foot{display:flex; justify-content:flex-end; padding:6px 8px 6px;}
+  button.primary{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:15px;
+    background:var(--coral); color:#fff; border:none; border-radius:100px;
+    padding:12px 24px; cursor:pointer; transition:transform .15s ease, opacity .15s ease;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  button.primary:hover{transform:translateY(-1px);}
+  button.primary:disabled{opacity:0.5; cursor:default; transform:none;}
+
+  .stage{margin-top:32px; min-height:20px;}
+
+  .thinking{
+    display:none; align-items:center; justify-content:center; gap:10px;
+    color:var(--slate-light); font-family:'IBM Plex Mono',monospace; font-size:13.5px;
+    padding:30px 0;
+  }
+  .thinking.show{display:flex;}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--coral); animation:pulse 1.1s infinite ease-in-out;}
+  .dot:nth-child(2){animation-delay:.15s;} .dot:nth-child(3){animation-delay:.3s;}
+  @keyframes pulse{0%,80%,100%{opacity:.25; transform:scale(0.8);} 40%{opacity:1; transform:scale(1.1);}}
+
+  .verdict{
+    display:none; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12);
+    border-radius:20px; padding:32px 30px; opacity:0; transform:translateY(8px) scale(0.98);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .verdict.show{display:block;}
+  .verdict.reveal{opacity:1; transform:translateY(0) scale(1);}
+
+  .verdict-label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--slate-light); margin-bottom:10px;}
+  .verdict-name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(30px,5vw,40px); color:var(--lav); margin-bottom:14px;}
+  .verdict-reason{font-size:15.5px; color:var(--slate-light); line-height:1.6; margin-bottom:26px;}
+
+  .open-btn{
+    width:100%; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px;
+    background:var(--coral); color:#fff; border:none; border-radius:12px;
+    padding:16px; cursor:pointer; margin-bottom:18px; transition:transform .15s ease;
+  }
+  .open-btn:hover{transform:translateY(-1px);}
+
+  .runner-up{
+    border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;
+    font-size:13.5px; color:var(--slate-light);
+  }
+  .runner-up b{color:var(--lav); font-family:'Space Grotesk',sans-serif;}
+
+  .alt-row{
+    margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);
+  }
+  .alt-label{font-size:12px; color:var(--slate-light); font-family:'IBM Plex Mono',monospace; margin-bottom:10px;}
+  .alt-chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .alt-chip{
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:600; color:var(--lav);
+    background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
+    padding:8px 14px; border-radius:100px; cursor:pointer; text-decoration:none;
+    transition:background .15s ease;
+  }
+  .alt-chip:hover{background:rgba(255,255,255,0.14);}
+
+  .error{
+    display:none; color:var(--coral-soft); font-size:14px; text-align:center; padding:20px 0;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .error.show{display:block;}
+
+  footer{
+    margin-top:56px; text-align:center; font-size:13.5px; color:var(--slate-light);
+    border-top:1px solid rgba(255,255,255,0.08); padding-top:24px;
+  }
+  footer b{color:var(--lav);}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="mark"></span>
+    <span class="brand">a free tool from <b>LINEOG</b></span>
+  </header>
+
+  <h1>What are you<br>trying to do?</h1>
+  <p class="sub">Tell us what you're trying to do. We'll tell you which AI handles it best.</p>
+
+  <div class="input-card">
+    <textarea id="taskInput" placeholder="e.g. Help me write a firm but fair email to a client who's late on payment"></textarea>
+    <div class="input-foot">
+      <button class="primary" id="submitBtn" onclick="findMyAI()">
+        Find my AI →
+      </button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="thinking" id="thinking">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span>weighing your task</span>
+    </div>
+
+    <div class="verdict" id="verdict">
+      <div class="verdict-label">Our pick</div>
+      <div class="verdict-name" id="verdictName">—</div>
+      <p class="verdict-reason" id="verdictReason"></p>
+      <button class="open-btn" id="openBtn">Open in — →</button>
+      <div class="runner-up" id="runnerUp" style="display:none;"></div>
+      <div class="alt-row" id="altRow"></div>
+    </div>
+
+    <div class="error" id="errorBox"></div>
+  </div>
+
+  <footer>
+    Made by <b>LINEOG</b>.
+    <br><br>
+    <a href="lineog.html" style="color:var(--coral-soft); text-decoration:none; font-weight:600;">See what else we're building →</a>
+  </footer>
+</div>
+
+<script>
+  const links = {
+    "ChatGPT": (p) => "https://chatgpt.com/?q=" + encodeURIComponent(p),
+    "Claude": (p) => "https://claude.ai/new?q=" + encodeURIComponent(p),
+    "Gemini": (p) => "https://gemini.google.com/app?q=" + encodeURIComponent(p),
+    "Perplexity": (p) => "https://www.perplexity.ai/?q=" + encodeURIComponent(p),
+    "Grok": (p) => "https://grok.com/?q=" + encodeURIComponent(p)
+  };
+  const allModels = ["ChatGPT", "Claude", "Gemini", "Perplexity", "Grok"];
+
+  async function findMyAI(){
+    const task = document.getElementById('taskInput').value.trim();
+    const btn = document.getElementById('submitBtn');
+    const thinking = document.getElementById('thinking');
+    const verdict = document.getElementById('verdict');
+    const errorBox = document.getElementById('errorBox');
+
+    verdict.classList.remove('show','reveal');
+    errorBox.classList.remove('show');
+
+    if(!task){
+      errorBox.textContent = "Tell us what you're trying to do first.";
+      errorBox.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    thinking.classList.add('show');
+
+    try{
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 300,
+          messages: [{
+            role: "user",
+            content: `You match everyday tasks to the AI assistant best suited for them: ChatGPT, Claude, Gemini, Perplexity, or Grok. Base this on each model's realistic relative strengths as of 2026 (Claude: careful writing, nuanced or sensitive tone, careful reasoning and coding correctness; ChatGPT: broad general knowledge, fast casual answers, image generation, wide plugin ecosystem; Gemini: deep Google Workspace integration, very long documents, multimodal and search-grounded tasks; Perplexity: research questions, fact-finding, current information with cited sources; Grok: real-time information, current events, and topics tied to X/Twitter). Respond with ONLY valid JSON, no markdown fences, no commentary, in exactly this shape: {"recommended":"ChatGPT|Claude|Gemini|Perplexity|Grok","reason":"one or two plain, warm sentences a non-technical person would understand","runnerUp":{"name":"ChatGPT|Claude|Gemini|Perplexity|Grok","reason":"one short sentence"} or null,"confidence":"high|medium"}
+
+Task: ${task}`
+          }]
+        })
+      });
+
+      const data = await response.json();
+      let text = data.content.map(b => b.text || "").join("").trim();
+      text = text.replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim();
+      const result = JSON.parse(text);
+
+      thinking.classList.remove('show');
+      document.getElementById('verdictName').textContent = result.recommended;
+      document.getElementById('verdictReason').textContent = result.reason;
+
+      const openBtn = document.getElementById('openBtn');
+      openBtn.textContent = `Open in ${result.recommended} →`;
+      openBtn.onclick = () => window.open(links[result.recommended](task), '_blank');
+
+      const ruBox = document.getElementById('runnerUp');
+      if(result.runnerUp && result.runnerUp.name){
+        ruBox.style.display = 'block';
+        ruBox.innerHTML = `Also reasonable: <b>${result.runnerUp.name}</b>, ${result.runnerUp.reason}`;
+      } else {
+        ruBox.style.display = 'none';
+      }
+
+      const altRow = document.getElementById('altRow');
+      const others = allModels.filter(m => m !== result.recommended);
+      altRow.innerHTML = `
+        <div class="alt-label">Not convinced? Open it in any of these instead:</div>
+        <div class="alt-chips">
+          ${others.map(m => `<a class="alt-chip" href="${links[m](task)}" target="_blank">${m}</a>`).join('')}
+        </div>`;
+
+      verdict.classList.add('show');
+      requestAnimationFrame(() => requestAnimationFrame(() => verdict.classList.add('reveal')));
+
+    } catch(err){
+      thinking.classList.remove('show');
+      errorBox.textContent = "Something went wrong getting a recommendation. Try again in a moment.";
+      errorBox.classList.add('show');
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('taskInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && !e.shiftKey){
+      e.preventDefault();
+      findMyAI();
+    }
+  });
+</script>
+</body>
+</html>
