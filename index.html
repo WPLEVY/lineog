@@ -194,6 +194,12 @@
   .diagram{
     display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap;
   }
+  .diagram-arrow-v{display:none;}
+  @media (max-width:680px){
+    .diagram{flex-direction:column;}
+    .diagram-arrow-h{display:none;}
+    .diagram-arrow-v{display:block;}
+  }
   .diagram-node{
     font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px;
     padding:16px 26px; border-radius:12px; background:#fff; border:1px solid var(--line);
@@ -346,9 +352,10 @@
 
 <div class="wrap">
   <section class="hero" style="padding-bottom:0;">
-    <div class="eyebrow">For anyone who's ever lost an afternoon to AI amnesia</div>
+    <div class="eyebrow">For anyone who's lost a trusted AI advisor to forgotten facts</div>
     <h1>Never explain yourself<br>to AI <span class="accent">again.</span></h1>
-    <p class="hero-sub">Finally, an AI you can trust, because it never loses the thread and never takes ownership of your information. AI is only as good as what it knows about you, but you shouldn't have to give up control of your life to make it useful.</p>
+    <p style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:var(--slate); margin-bottom:14px;">LINEOG is the one place your facts, decisions, and history live, and follow you into whichever AI you're using.</p>
+    <p class="hero-sub">The moment you realize it's forgotten the facts, you've lost your trusted advisor. LINEOG makes sure that moment never comes.</p>
     <div class="cta-row">
       <button class="btn btn-primary" onclick="document.getElementById('join').scrollIntoView()">Join the beta</button>
     </div>
@@ -366,16 +373,24 @@
     </div>
     <p style="color:var(--slate-light); font-size:14px; max-width:600px; margin-bottom:28px; text-align:left;">AI doesn't actually hold onto everything you've discussed. Once a conversation runs long, it leans on a shrinking summary, and older details quietly get lost, or misstated with total confidence. LINEOG stores every fact directly, so that doesn't happen.</p>
     <div class="thread-svg-wrap">
-      <svg viewBox="0 0 900 170" preserveAspectRatio="none">
+      <svg viewBox="0 0 900 170" preserveAspectRatio="xMidYMid meet">
         <path id="threadPath" class="thread-path" d="M20,110 C 150,60 260,150 400,90 C 520,40 620,140 760,80 C 820,55 850,70 880,60" />
         <g id="nodes"></g>
       </svg>
     </div>
     <div class="thread-caption" id="threadCaption">Week 7: still a resource you can trust with what matters.</div>
 
-    <p style="margin-top:24px; color:var(--slate-light); font-size:14px; text-align:left;">LINEOG stores every fact about you directly. If it ever gets something wrong, you'll be able to correct it, and it's fixed.</p>
+    <p style="margin-top:24px; color:var(--slate-light); font-size:14px; text-align:left;">LINEOG keeps the information you choose to carry forward. If it ever gets something wrong, you'll be able to correct it, and it's fixed.</p>
   </div>
 </div>
+
+<section id="dates">
+  <div class="wrap" style="max-width:720px; text-align:center;">
+    <div class="section-eyebrow">A date for everything</div>
+    <h2>Ask when. Get a real answer.</h2>
+    <p class="section-sub">When did we sign the lease? When was your last review? When did this start? Most AI was never built to track time, only conversation, so it guesses, or it simply can't answer. LINEOG catalogs every date automatically, so the answer is always there, exactly when you need it.</p>
+  </div>
+</section>
 
 <section id="philosophy">
   <div class="wrap" style="max-width:820px; text-align:center;">
@@ -399,9 +414,11 @@
   <div class="wrap">
     <div class="diagram">
       <div class="diagram-node you">You</div>
-      <div class="diagram-arrow">→</div>
+      <div class="diagram-arrow diagram-arrow-h">→</div>
+      <div class="diagram-arrow diagram-arrow-v">↓</div>
       <div class="diagram-node lineog">LINEOG</div>
-      <div class="diagram-arrow">→</div>
+      <div class="diagram-arrow diagram-arrow-h">→</div>
+      <div class="diagram-arrow diagram-arrow-v">↓</div>
       <div class="diagram-cluster">
         <span class="diagram-chip">ChatGPT</span>
         <span class="diagram-chip">Claude</span>
@@ -409,7 +426,7 @@
         <span class="diagram-chip">Future AI</span>
       </div>
     </div>
-    <p style="text-align:center; color:var(--slate); font-size:14px; margin-top:22px;">One place holds what you've built. Every AI borrows from it, temporarily, never keeps it.</p>
+    <p style="text-align:center; color:var(--slate); font-size:14px; margin-top:22px;">One place holds what you've built. Every AI receives only the context it needs, under your control.</p>
   </div>
 </section>
 
@@ -473,9 +490,9 @@
         <p>Designed so your information isn't used to train AI models, and isn't kept longer than it has to be, architecture first, not a promise made after the fact.</p>
       </div>
       <div class="honesty-cell">
-        <span class="status live">Growing stronger</span>
-        <h4>Built toward enterprise-grade protection</h4>
-        <p>Built around architectures that minimize long-term retention and maximize your control, moving toward the same protections large companies negotiate for themselves.</p>
+        <span class="status live">Protected today</span>
+        <h4>Built around user control</h4>
+        <p>Built around user control and modern security architecture, minimizing long-term retention and maximizing your say over what's kept.</p>
       </div>
     </div>
   </div>
@@ -492,7 +509,7 @@
 <section class="waitlist" id="join">
   <div class="wrap">
     <div class="section-eyebrow">Beta access</div>
-    <h2>Be one of the first to never lose the thread.</h2>
+    <h2>Be one of the first to get an AI that never loses the facts.</h2>
     <p class="section-sub">We're onboarding beta users in small batches. Leave your name and email and we'll reach out.</p>
     <form class="form-row" onsubmit="return joinList(event)">
       <input type="text" id="nameInput" placeholder="Your name">
