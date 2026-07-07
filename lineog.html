@@ -360,7 +360,7 @@
     <div class="eyebrow">For anyone who's lost a trusted AI advisor to forgotten facts</div>
     <h1>Never explain yourself<br>to AI <span class="accent">again.</span></h1>
     <p style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:16px; color:var(--slate); margin-bottom:14px;">LINEOG is the one place your facts, decisions, and history live, and follow you into whichever AI you're using.</p>
-    <p class="hero-sub">The moment you realize it's forgotten the facts, you've lost your trusted advisor. LINEOG makes sure that moment never comes.</p>
+    <p class="hero-sub">One conversation, any AI can handle. A project that spans days, weeks, and more than one AI, that's where they all fall short. LINEOG makes sure that moment never comes.</p>
     <div class="cta-row">
       <button class="btn btn-primary" onclick="document.getElementById('join').scrollIntoView()">Join the beta</button>
     </div>
@@ -599,8 +599,19 @@
 
   setMode(true);
 
-  function joinList(e){
+  async function joinList(e){
     e.preventDefault();
+    const name = document.getElementById('nameInput').value.trim();
+    const email = document.getElementById('emailInput').value.trim();
+    try{
+      await fetch('/api/interest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, task: name ? `Waitlist signup: ${name}` : 'Waitlist signup', recommended: null })
+      });
+    } catch(err){
+      console.error(err);
+    }
     document.getElementById('thanksMsg').classList.add('show');
     document.getElementById('nameInput').value = '';
     document.getElementById('emailInput').value = '';

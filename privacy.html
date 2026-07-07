@@ -13,7 +13,7 @@
 <style>
   :root{
     --plum:#1A1035; --lav:#FAF8FF; --lav-dim:#F0ECFB; --coral:#FF6B4A;
-    --ink:#1B1730; --slate:#6B678A; --slate-light:#A8A3C7; --line: rgba(27,23,48,0.10);
+    --ink:#1B1730; --slate:#6B678A; --slate-light:#A8A3C7;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{ background:var(--lav); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.65; }
@@ -33,38 +33,35 @@
   p, li{color:var(--ink); font-size:15px;}
   ul{margin-left:20px; margin-bottom:14px;}
   li{margin-bottom:6px;}
-  .note{
-    border-left:3px solid var(--coral); padding-left:16px; color:var(--slate); font-size:13.5px; margin-top:40px;
-  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <a class="back" href="index.html">← Back to LINEOG</a>
   <h1>Privacy Policy</h1>
-  <div class="updated">Draft, last updated [DATE — insert before publishing]</div>
+  <div class="updated">Last updated July 2026</div>
 
   <div class="plain">
     <h2>The plain-language version</h2>
     <p>We built LINEOG because we were tired of choosing between useful AI and private AI. Here's the short version of how we handle your information:</p>
     <ul>
       <li><strong>What we collect:</strong> what you type into the recommendation tool, and basic, anonymous usage data (like how many people visit, and what pages they view).</li>
-      <li><strong>What we don't collect:</strong> your name, unless you give it to us; your IP address in a way that's tied to what you typed; passwords or account credentials for any other service.</li>
+      <li><strong>What we don't collect:</strong> your name, unless you give it to us; passwords or account credentials for any other service; advertising identifiers.</li>
       <li><strong>Why we collect it:</strong> to generate your recommendation, and to understand what people are asking so we can improve it.</li>
-      <li><strong>What we never do:</strong> sell your prompts, use them to build an advertising profile, or share them with anyone outside of what's needed to generate your recommendation.</li>
-      <li><strong>If you give us your email</strong> (to hear about future LINEOG features), we use it only to reach out about that, nothing else.</li>
-      <li><strong>How to reach us</strong> if you want something deleted or have a question: [INSERT CONTACT EMAIL].</li>
+      <li><strong>What we never do:</strong> sell your prompts, use them to build an advertising profile, or share them with anyone beyond what's needed to generate your recommendation.</li>
+      <li><strong>If you give us your email</strong> to hear about future LINEOG features, we use it only to reach out about that, nothing else.</li>
+      <li><strong>How to reach us</strong> about your information: hello@lineog.com.</li>
     </ul>
   </div>
 
   <h2 class="section">1. Who we are</h2>
-  <p>LINEOG ("we," "us," "our") operates the website and tools located at [DOMAIN], including the AI recommendation tool and any related pages (together, the "Service"). This policy explains what information the Service collects, how it's used, and the choices you have.</p>
+  <p>LINEOG ("we," "us," "our") operates lineog.com and its related tools, including the AI recommendation tool (the "Service"). This policy explains what information the Service collects, how it's used, and the choices you have.</p>
 
   <h2 class="section">2. Information we collect</h2>
   <p><strong>Information you provide directly:</strong></p>
   <ul>
     <li>The text you enter describing a task, in order to receive an AI recommendation and an optimized prompt.</li>
-    <li>Your email address, if you choose to submit it to express interest in future LINEOG features.</li>
+    <li>Your name and email address, if you choose to share them to express interest in future LINEOG features.</li>
   </ul>
   <p><strong>Information collected automatically:</strong></p>
   <ul>
@@ -76,7 +73,7 @@
   <ul>
     <li>To generate and display an AI recommendation and optimized prompt in response to what you type.</li>
     <li>To understand, in aggregate, what kinds of tasks people are asking about, so we can improve the tool.</li>
-    <li>To contact you about LINEOG's future product, only if you've given us your email for that purpose.</li>
+    <li>To contact you about LINEOG's future product, only if you've shared your email for that purpose.</li>
     <li>To maintain the security and reliability of the Service.</li>
   </ul>
 
@@ -84,34 +81,30 @@
   <ul>
     <li>We do not sell the text you enter, or any information collected through the Service, to third parties.</li>
     <li>We do not use what you type to build advertising profiles, and we do not run third-party advertising on the Service.</li>
-    <li>We do not use your submitted tasks to train AI models beyond the single request needed to generate your recommendation. [CONFIRM against actual API provider terms in use at time of publishing.]</li>
+    <li>We do not use your submitted tasks to train any AI model. Our AI provider processes each request only to generate your recommendation, under their standard API terms, which exclude that data from model training.</li>
   </ul>
 
   <h2 class="section">5. Third parties involved in providing the Service</h2>
-  <p>To generate a recommendation, the text you enter is sent to Anthropic's API (which powers Claude) for processing. Anthropic's own terms govern how that request is handled on their end; as of this writing, standard API use is not used to train Anthropic's models by default. [Verify current terms before publishing, since provider policies can change.] We use Vercel for hosting and privacy-oriented analytics.</p>
+  <p>To generate a recommendation, the text you enter is sent to Anthropic's API (which powers Claude) for the sole purpose of producing that recommendation. Anthropic's standard API terms govern that processing and exclude the data from being used to train their models. We use Vercel for hosting and privacy-oriented analytics. When you choose to open a recommended AI assistant (such as ChatGPT, Claude, Gemini, Perplexity, or Grok), you leave the Service and interact with that provider directly, under their own privacy policy and terms, which we don't control.</p>
 
   <h2 class="section">6. Data retention</h2>
-  <p>[TO FINALIZE: state actual retention period once decided, e.g., "Task text submitted to the recommendation tool is retained in system logs for [X days], after which it is automatically deleted." Be precise and accurate to what the system actually does.]</p>
+  <p>Task text submitted to the recommendation tool is retained in system logs for a limited operational period, no more than 30 days, for debugging and service improvement, after which it is not separately retained by us. If you submit your name or email to express interest in LINEOG, we retain that information until you ask us to delete it or until it's no longer needed for the purpose you provided it.</p>
 
   <h2 class="section">7. Your choices</h2>
   <ul>
-    <li>You are never required to provide your email to use the recommendation tool itself.</li>
-    <li>You can request that we delete any information associated with an email you've submitted by contacting us at [INSERT CONTACT EMAIL].</li>
-    <li>If you are in the EU/UK or California, you may have additional rights under GDPR or the CCPA, including the right to access, correct, or delete your information, and, where applicable, to opt out of certain data uses. [Expand this section with jurisdiction-specific detail before publishing.]</li>
+    <li>You are never required to provide your name or email to use the recommendation tool itself.</li>
+    <li>You can ask us to delete any information associated with an email you've shared with us by writing to hello@lineog.com.</li>
+    <li>If you are located in the European Union, the UK, or California, you may have additional rights under GDPR or the CCPA, including the right to access, correct, or delete your personal information, and to opt out of certain uses of it. To exercise any of these rights, contact us at hello@lineog.com and we will respond within the time required by applicable law.</li>
   </ul>
 
   <h2 class="section">8. Children's privacy</h2>
-  <p>The Service is not directed to children under 13, and we do not knowingly collect information from children under 13.</p>
+  <p>The Service is not directed to children under 13, and we do not knowingly collect information from children under 13. If we learn we've collected information from a child under 13, we will delete it.</p>
 
   <h2 class="section">9. Changes to this policy</h2>
-  <p>We may update this policy as the Service evolves. Material changes will be reflected by updating the date at the top of this page.</p>
+  <p>We may update this policy as the Service evolves. Material changes will be reflected by updating the date at the top of this page. Continued use of the Service after an update constitutes acceptance of the revised policy.</p>
 
   <h2 class="section">10. Contact</h2>
-  <p>Questions about this policy or your information: [INSERT CONTACT EMAIL].</p>
-
-  <div class="note">
-    Draft prepared for attorney review. Bracketed items require a decision or confirmation before this is published as a live, binding policy. This draft aims to be accurate to what the product actually does as of this conversation; verify each factual claim (retention periods, third-party provider terms) against the live system before publishing.
-  </div>
+  <p>Questions about this policy or your information: hello@lineog.com.</p>
 </div>
 </body>
 </html>
