@@ -96,6 +96,13 @@
   }
   .open-btn:hover{transform:translateY(-1px);}
 
+  .runner-btn{
+    display:block; width:100%; font-family:'Inter',sans-serif; font-weight:500; font-size:13px;
+    color:var(--slate-light); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+    padding:9px 16px; border-radius:100px; cursor:pointer; margin-top:8px; text-align:center;
+  }
+  .runner-btn:hover{background:rgba(255,255,255,0.09);}
+
   .runner-up{
     border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;
     font-size:13.5px; color:var(--slate-light);
@@ -121,11 +128,23 @@
     background:rgba(255,107,74,0.12); border:none; padding:8px 16px; border-radius:100px; cursor:pointer;
   }
 
-  /* BRIDGE LINE */
-  .bridge-line{
-    text-align:center; font-size:13.5px; color:var(--slate-light); margin-top:20px;
+  /* BRIDGE CARD */
+  .bridge-card{
+    margin-top:22px; padding:24px 22px; text-align:center;
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:14px;
   }
-  .bridge-line a{color:var(--coral-soft); text-decoration:none; font-weight:600;}
+  .bridge-label{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--coral-soft); margin-bottom:10px;
+  }
+  .bridge-head{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16.5px; color:var(--lav); margin-bottom:10px;
+  }
+  .bridge-copy{color:var(--slate-light); font-size:13.5px; line-height:1.6; max-width:420px; margin:0 auto 18px;}
+  .bridge-btn{
+    display:inline-block; font-family:'Inter',sans-serif; font-weight:600; font-size:14px;
+    color:#fff; background:var(--coral); padding:11px 22px; border-radius:100px; text-decoration:none;
+  }
 
   .alt-row{
     margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);
@@ -198,10 +217,15 @@
       </div>
 
       <button class="open-btn" id="openBtn">Open in — →</button>
-      <div class="runner-up" id="runnerUp" style="display:none;"></div>
+      <button class="runner-btn" id="runnerBtn" style="display:none;"></button>
       <div class="alt-row" id="altRow"></div>
 
-      <p class="bridge-line">Great for one question. But long, important work breaks AI two ways: it forgets the longer it runs, and switching models means starting over. LINEOG fixes both. <a href="lineog.html">See how it works →</a></p>
+      <div class="bridge-card">
+        <div class="bridge-label">Going deeper?</div>
+        <div class="bridge-head">Bigger questions need more than one AI.</div>
+        <p class="bridge-copy">Longer conversations and real projects break AI two ways: it forgets the longer they run, and switching models means starting over. LINEOG keeps every model working from the same facts, together.</p>
+        <a href="lineog.html" class="bridge-btn">See how LINEOG works →</a>
+      </div>
     </div>
 
     <div class="error" id="errorBox"></div>
@@ -290,16 +314,21 @@
         window.open(links[result.recommended](finalPrompt), '_blank');
       };
 
-      const ruBox = document.getElementById('runnerUp');
+      const runnerBtn = document.getElementById('runnerBtn');
       if(result.runnerUp && result.runnerUp.name){
-        ruBox.style.display = 'block';
-        ruBox.innerHTML = `Also reasonable: <b>${result.runnerUp.name}</b>, ${result.runnerUp.reason}`;
+        runnerBtn.style.display = 'block';
+        runnerBtn.textContent = `Or try ${result.runnerUp.name} — ${result.runnerUp.reason}`;
+        runnerBtn.onclick = () => {
+          const finalPrompt = document.getElementById('optimizedPromptBox').value.trim() || task;
+          window.open(links[result.runnerUp.name](finalPrompt), '_blank');
+        };
       } else {
-        ruBox.style.display = 'none';
+        runnerBtn.style.display = 'none';
       }
 
       const altRow = document.getElementById('altRow');
-      const others = allModels.filter(m => m !== result.recommended);
+      const runnerName = result.runnerUp ? result.runnerUp.name : null;
+      const others = allModels.filter(m => m !== result.recommended && m !== runnerName);
       altRow.innerHTML = `
         <div class="alt-label">If you prefer, you can open this prompt in any of these AI models instead:</div>
         <div class="alt-chips">
