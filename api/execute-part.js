@@ -104,22 +104,22 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { model, name, guidance } = req.body || {};
+  const { model, specialist, name, guidance } = req.body || {};
 
   if (!model || !providers[model]) {
     return res.status(400).json({ error: 'Unknown or unsupported model.' });
   }
-  if (!name || !guidance) {
-    return res.status(400).json({ error: 'Part name and guidance are required.' });
+  if (!guidance) {
+    return res.status(400).json({ error: 'Briefing is required.' });
   }
 
-  const prompt = `You are being consulted as a specialist for one part of a larger task: "${name}". Here is the context and question: ${guidance}
+  const prompt = `You are being consulted as a specialist for one part of a larger task${specialist ? `, specifically as the ${specialist}` : ''}. Here is the briefing: ${guidance}
 
-Give a real, specific, helpful answer, a few sentences, not a placeholder.`;
+Give a real, specific, helpful answer, a few sentences, not a placeholder. Plain prose, no markdown symbols like ** or bullet dashes.`;
 
   try {
     const answer = await providers[model](prompt);
-    return res.status(200).json({ answer, model, usedFallback: false });
+    return res.status(200).json({ answer, model, specialist, usedFallback: false });
 
   } catch (err) {
     console.error(`Error calling ${model}:`, err.message);
@@ -133,6 +133,7 @@ Give a real, specific, helpful answer, a few sentences, not a placeholder.`;
         return res.status(200).json({
           answer: fallbackAnswer,
           model: 'Claude',
+          specialist,
           usedFallback: true,
           fallbackReason: err.message === 'PERPLEXITY_OUT_OF_CREDIT'
             ? 'Perplexity is out of credit, answered with Claude instead.'
