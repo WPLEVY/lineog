@@ -55,6 +55,14 @@
     display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--slate-light);
     text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;
   }
+  .password-wrap{position:relative;}
+  .password-wrap input{padding-right:42px;}
+  .eye-toggle{
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; font-size:15px; opacity:0.55; padding:4px;
+  }
+  .eye-toggle:hover{opacity:1;}
+
   .field input{
     width:100%; font-family:'Inter',sans-serif; font-size:14.5px; padding:11px 14px;
     border:1px solid rgba(255,255,255,0.12); border-radius:10px; background:rgba(255,255,255,0.05); color:var(--lav);
@@ -101,7 +109,10 @@
       </div>
       <div class="field">
         <label>Password</label>
-        <input type="password" id="signinPassword" placeholder="••••••••" required>
+        <div class="password-wrap">
+          <input type="password" id="signinPassword" placeholder="••••••••" required>
+          <button type="button" class="eye-toggle" onclick="togglePassword('signinPassword', this)">👁</button>
+        </div>
       </div>
       <button class="submit-btn" type="submit" id="signinBtn">Sign in</button>
     </form>
@@ -117,7 +128,10 @@
       </div>
       <div class="field">
         <label>Password</label>
-        <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6">
+        <div class="password-wrap">
+          <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6">
+          <button type="button" class="eye-toggle" onclick="togglePassword('signupPassword', this)">👁</button>
+        </div>
       </div>
       <button class="submit-btn" type="submit" id="signupBtn">Create account</button>
     </form>
@@ -152,6 +166,17 @@
   } else {
     document.getElementById('signinBtn').disabled = true;
     document.getElementById('signupBtn').disabled = true;
+  }
+
+  function togglePassword(fieldId, btn){
+    const field = document.getElementById(fieldId);
+    if(field.type === 'password'){
+      field.type = 'text';
+      btn.textContent = '🙈';
+    } else {
+      field.type = 'password';
+      btn.textContent = '👁';
+    }
   }
 
   function setMode(mode){
@@ -192,7 +217,7 @@
       return false;
     }
     showMsg('Signed in. Taking you to LINEOG...', 'success');
-    setTimeout(() => { window.location.href = 'lineog-v01-prototype.html'; }, 800);
+    setTimeout(() => { window.location.href = 'app.html'; }, 800);
     return false;
   }
 
@@ -228,7 +253,7 @@
     if(!isConfigured) return;
     const { data } = await sb.auth.getSession();
     if(data.session){
-      window.location.href = 'lineog-v01-prototype.html';
+      window.location.href = 'app.html';
     }
   }
   checkExistingSession();
