@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINEOG — Your first meeting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --plum:#1A1035; --plum-soft:#261A47; --lav:#FAF8FF; --lav-dim:#F0ECFB;
+    --coral:#FF6B4A; --coral-soft:#FF8A6E; --mint:#6BCB9E; --ink:#1B1730;
+    --slate:#6B678A; --slate-light:#A8A3C7; --line: rgba(27,23,48,0.10);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:radial-gradient(circle at 50% 0%, var(--plum-soft) 0%, var(--plum) 55%);
+    min-height:100vh; font-family:'Inter',sans-serif; color:var(--lav);
+    display:flex; align-items:center; justify-content:center; padding:40px 20px;
+    overflow-x:hidden;
+  }
+  .stage{width:100%; max-width:640px;}
+  .scene{display:none; animation:scene-in .6s ease forwards;}
+  .scene.active{display:block;}
+  @keyframes scene-in{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+  .advisor-line{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(20px,3.5vw,26px);
+    line-height:1.4; color:var(--lav); margin-bottom:28px; text-align:center;
+  }
+  .advisor-sub{color:var(--slate-light); font-size:14.5px; text-align:center; margin-bottom:32px; line-height:1.6;}
+
+  .choice-row{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
+  .choice-btn{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:14.5px; color:var(--lav);
+    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14);
+    padding:14px 24px; border-radius:14px; cursor:pointer; transition:all .2s ease;
+  }
+  .choice-btn:hover{background:rgba(255,107,74,0.12); border-color:rgba(255,107,74,0.35);}
+
+  .paste-box{
+    width:100%; min-height:160px; font-family:'Inter',sans-serif; font-size:14px; color:var(--lav);
+    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.14); border-radius:14px;
+    padding:16px; resize:vertical; margin-bottom:16px;
+  }
+  .paste-box::placeholder{color:var(--slate-light);}
+  .primary-btn{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:14.5px; color:#fff;
+    background:var(--coral); border:none; padding:13px 26px; border-radius:100px; cursor:pointer; display:block; margin:0 auto;
+  }
+  .primary-btn:disabled{opacity:0.5; cursor:default;}
+  .quiet-link-btn{
+    display:block; margin:16px auto 0; font-family:'Inter',sans-serif; font-size:12.5px;
+    color:var(--slate-light); background:none; border:none; cursor:pointer; text-decoration:underline;
+  }
+
+  .reading-state{
+    display:flex; flex-direction:column; align-items:center; gap:14px; padding:60px 0;
+  }
+  .reading-dot{
+    width:8px; height:8px; border-radius:50%; background:var(--coral);
+    animation:reading-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes reading-pulse{ 0%,100%{opacity:0.3;} 50%{opacity:1;} }
+  .reading-text{font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--slate-light);}
+
+  .observation-card{
+    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); border-radius:16px;
+    padding:22px 24px; margin-bottom:16px; opacity:0; transform:translateY(8px);
+    animation:obs-in .5s ease forwards;
+  }
+  @keyframes obs-in{ to{opacity:1; transform:translateY(0);} }
+  .observation-type{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--coral-soft); margin-bottom:10px;
+  }
+  .observation-text{font-size:14.5px; line-height:1.6; color:var(--lav); margin-bottom:12px;}
+  .observation-fix{font-size:13px; color:var(--mint); margin-bottom:12px;}
+  .observation-actions{display:flex; gap:8px;}
+  .observation-actions button{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:12px; color:var(--lav);
+    background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
+    padding:7px 14px; border-radius:100px; cursor:pointer;
+  }
+  .observation-actions button.fixed{background:var(--mint); color:var(--plum); border-color:var(--mint);}
+
+  .fix-input-row{display:none; gap:8px; margin-top:10px;}
+  .fix-input-row.show{display:flex;}
+  .fix-input-row input{
+    flex:1; font-size:13px; padding:8px 12px; border:1px solid rgba(255,107,74,0.4); border-radius:8px;
+    background:rgba(0,0,0,0.2); color:var(--lav);
+  }
+  .fix-input-row button{
+    font-size:12px; font-weight:600; color:#fff; background:var(--coral); border:none;
+    padding:8px 14px; border-radius:8px; cursor:pointer;
+  }
+
+  .transform-before{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--slate-light);
+    background:rgba(0,0,0,0.2); border-radius:12px; padding:16px; margin-bottom:20px; line-height:1.6;
+    max-height:100px; overflow:hidden; transition:opacity .6s ease;
+  }
+  .transform-before.faded{opacity:0.2;}
+  .transform-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px;}
+  .transform-card{
+    background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:12px;
+    padding:14px; opacity:0; transform:scale(0.9); animation:card-pop .4s ease forwards;
+  }
+  @keyframes card-pop{ to{opacity:1; transform:scale(1);} }
+  .transform-card-label{font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--coral-soft); text-transform:uppercase; margin-bottom:6px;}
+  .transform-card-count{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:var(--lav);}
+
+  .stream-line{
+    display:flex; align-items:center; gap:10px; font-size:13px; color:var(--slate-light);
+    padding:6px 0; font-family:'IBM Plex Mono',monospace;
+  }
+  .stream-dot{width:7px; height:7px; border-radius:50%; background:var(--coral); animation:reading-pulse 1s ease-in-out infinite;}
+  .stream-dot.done{background:var(--mint); animation:none;}
+
+  .demo-answer{
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px;
+    padding:20px; margin-top:16px; font-size:14px; line-height:1.6; color:var(--lav);
+  }
+
+  .rule-demo-input{
+    width:100%; font-size:14px; padding:12px 16px; border:1px solid rgba(255,255,255,0.14);
+    border-radius:100px; background:rgba(255,255,255,0.05); color:var(--lav); margin-bottom:14px;
+  }
+
+  .closing-line{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(20px,4vw,28px);
+    text-align:center; line-height:1.5; color:var(--lav); margin-bottom:10px;
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <div class="scene active" id="scene-0">
+    <p class="advisor-line">Before anything else, I want to see how you're currently being remembered.</p>
+    <div class="choice-row">
+      <button class="choice-btn" onclick="goToScene('paste')">I'll paste something</button>
+      <button class="choice-btn" onclick="goToScene('fresh')">I'd rather just start talking</button>
+    </div>
+  </div>
+
+  <div class="scene" id="scene-paste">
+    <p class="advisor-line">Paste a memory summary, or a conversation you're proud of.</p>
+    <textarea class="paste-box" id="pasteInput" placeholder="Paste it here..."></textarea>
+    <button class="primary-btn" onclick="runAudit()">Let's look at this together</button>
+  </div>
+
+  <div class="scene" id="scene-reading">
+    <div class="reading-state">
+      <div class="reading-dot"></div>
+      <div class="reading-text" id="readingText">reading, not just scanning</div>
+    </div>
+  </div>
+
+  <div class="scene" id="scene-observations">
+    <p class="advisor-line">A couple of things worth mentioning.</p>
+    <div id="observationsList"></div>
+    <button class="primary-btn" id="continueFromObs" onclick="goToScene('transform')" style="display:none; margin-top:10px;">Continue</button>
+  </div>
+
+  <div class="scene" id="scene-transform">
+    <p class="advisor-line">This wasn't really one flat block of text.</p>
+    <div class="transform-before" id="transformBefore"></div>
+    <div class="transform-grid" id="transformGrid"></div>
+    <button class="primary-btn" onclick="goToScene('specialist')" style="margin-top:24px;">Continue</button>
+  </div>
+
+  <div class="scene" id="scene-fresh">
+    <p class="advisor-line">What's something happening in your life right now that you'll want to look back on and know exactly when it happened?</p>
+    <input type="text" class="rule-demo-input" id="freshInput" placeholder="Tell me...">
+    <button class="primary-btn" onclick="saveFreshFact()">That's it</button>
+  </div>
+
+  <div class="scene" id="scene-specialist">
+    <p class="advisor-line">Now ask me something real, whatever's actually on your mind.</p>
+    <input type="text" class="rule-demo-input" id="specialistInput" placeholder="Ask anything...">
+    <button class="primary-btn" onclick="runSpecialistDemo()">Ask</button>
+    <div id="specialistStream" style="margin-top:20px;"></div>
+    <div id="specialistAnswer"></div>
+    <button class="primary-btn" id="continueFromSpecialist" onclick="goToScene('rules')" style="display:none; margin-top:20px;">Continue</button>
+  </div>
+
+  <div class="scene" id="scene-rules">
+    <p class="advisor-line">Before we go further, is there anything you want me to always do, or never do?</p>
+    <input type="text" class="rule-demo-input" id="ruleDemoInput" placeholder="e.g. Always ask before assuming...">
+    <button class="primary-btn" onclick="saveRuleDemo()">That's a rule now</button>
+  </div>
+
+  <div class="scene" id="scene-ending">
+    <p class="closing-line" id="closingLine1"></p>
+    <p class="advisor-sub" id="closingLine2" style="margin-top:14px;"></p>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = "https://bdqxglqczqcsjaziaanc.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkcXhnbHFjenFjc2phemlhYW5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1Mjg5NzMsImV4cCI6MjA5OTEwNDk3M30.-i0UgUlG9X9lMMOxKQRmoWUIaZB0VJyii-G22EPsb6s";
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let currentUser = null;
+  let auditResult = null;
+
+  async function requireAuth(){
+    const { data } = await sb.auth.getSession();
+    if(!data.session){ window.location.href = 'lineog-login.html'; return false; }
+    currentUser = data.session.user;
+    return true;
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function goToScene(name){
+    document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+    document.getElementById('scene-' + name).classList.add('active');
+    if(name === 'transform') prepareTransform();
+  }
+
+  async function runAudit(){
+    const text = document.getElementById('pasteInput').value.trim();
+    if(text.length < 20){ return; }
+    goToScene('reading');
+
+    try{
+      const response = await fetch('/api/intake-audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pastedText: text })
+      });
+      const result = await response.json();
+      if(!response.ok || result.error){
+        document.getElementById('readingText').textContent = result.error || 'Something went wrong, try again.';
+        return;
+      }
+      auditResult = result;
+      renderObservations(result.observations || []);
+      goToScene('observations');
+    } catch(err){
+      console.error(err);
+      document.getElementById('readingText').textContent = 'Something went wrong, try again.';
+    }
+  }
+
+  function renderObservations(observations){
+    const list = document.getElementById('observationsList');
+    if(observations.length === 0){
+      list.innerHTML = '<div class="advisor-sub">Honestly, this looked well organized already. Let\'s keep going.</div>';
+    } else {
+      list.innerHTML = observations.map((o, i) => `
+        <div class="observation-card" style="animation-delay:${i * 0.3}s">
+          <div class="observation-type">${escapeHtml(o.type.replace('_',' '))}</div>
+          <div class="observation-text">${escapeHtml(o.text)}</div>
+          <div class="observation-fix">${escapeHtml(o.suggestedFix || '')}</div>
+          <div class="observation-actions">
+            <button onclick="showFixInput(${i})">Fix this now</button>
+          </div>
+          <div class="fix-input-row" id="fixRow-${i}">
+            <input type="text" id="fixInput-${i}" placeholder="What's actually true?">
+            <button onclick="confirmFix(${i})">Save</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    document.getElementById('continueFromObs').style.display = 'block';
+  }
+
+  function showFixInput(i){
+    document.getElementById(`fixRow-${i}`).classList.add('show');
+  }
+
+  async function confirmFix(i){
+    const value = document.getElementById(`fixInput-${i}`).value.trim();
+    if(!value) return;
+    const card = document.getElementById(`fixRow-${i}`).closest('.observation-card');
+    const { error } = await sb.from('facts').insert({
+      user_id: currentUser.id, label: 'Clarified during intake', value
+    });
+    if(error) console.error('Could not save fix', error);
+    card.querySelector('.observation-actions').innerHTML = `<button class="fixed">✓ Fixed, permanently</button>`;
+    document.getElementById(`fixRow-${i}`).classList.remove('show');
+  }
+
+  async function prepareTransform(){
+    const text = document.getElementById('pasteInput').value.trim();
+    document.getElementById('transformBefore').textContent = text.slice(0, 300) + (text.length > 300 ? '...' : '');
+
+    if(!auditResult) return;
+    const people = auditResult.extractedPeople || [];
+    const companies = auditResult.extractedCompanies || [];
+    const preferences = auditResult.extractedPreferences || [];
+    const facts = auditResult.extractedFacts || [];
+
+    for(const p of people){
+      await sb.from('people').insert({ user_id: currentUser.id, name: p.name, relationship: p.relationship || null });
+    }
+    for(const c of companies){
+      await sb.from('companies').insert({ user_id: currentUser.id, name: c.name, role: c.role || null });
+    }
+    for(const pref of preferences){
+      await sb.from('preferences').insert({ user_id: currentUser.id, category: pref.category || null, preference: pref.preference });
+    }
+    for(const f of facts){
+      await sb.from('facts').insert({ user_id: currentUser.id, label: f.label, value: f.value });
+    }
+
+    const grid = document.getElementById('transformGrid');
+    const cards = [
+      { label: 'People', count: people.length },
+      { label: 'Companies', count: companies.length },
+      { label: 'Preferences', count: preferences.length },
+      { label: 'Facts', count: facts.length }
+    ].filter(c => c.count > 0);
+
+    grid.innerHTML = cards.map((c, i) => `
+      <div class="transform-card" style="animation-delay:${i * 0.15}s">
+        <div class="transform-card-label">${c.label}</div>
+        <div class="transform-card-count">${c.count}</div>
+      </div>
+    `).join('');
+
+    setTimeout(() => document.getElementById('transformBefore').classList.add('faded'), 300);
+  }
+
+  async function saveFreshFact(){
+    const value = document.getElementById('freshInput').value.trim();
+    if(!value) return;
+    await sb.from('facts').insert({ user_id: currentUser.id, label: 'First noted at intake', value });
+    goToScene('specialist');
+  }
+
+  async function runSpecialistDemo(){
+    const text = document.getElementById('specialistInput').value.trim();
+    if(!text) return;
+    document.getElementById('specialistStream').innerHTML = '<div class="stream-line"><span class="stream-dot"></span><span>Thinking...</span></div>';
+    document.getElementById('specialistAnswer').innerHTML = '';
+
+    try{
+      const response = await fetch('/api/premium-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, commits: [], rules: [] })
+      });
+      const parsed = await response.json();
+      document.getElementById('specialistStream').innerHTML = '';
+
+      if(parsed.complex && parsed.specialistPlan && parsed.specialistPlan.length){
+        const stream = document.getElementById('specialistStream');
+        stream.innerHTML = parsed.specialistPlan.map((p, i) => `<div class="stream-line" id="istream-${i}"><span class="stream-dot"></span><span>Consulting our ${escapeHtml(p.specialist)}...</span></div>`).join('');
+
+        const results = await Promise.all(parsed.specialistPlan.map(async (p, i) => {
+          const r = await fetch('/api/execute-part', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: p.model, specialist: p.specialist, guidance: p.briefing })
+          });
+          const rd = await r.json();
+          document.getElementById(`istream-${i}`).innerHTML = `<span class="stream-dot done"></span><span>Consulted our ${escapeHtml(p.specialist)}</span>`;
+          return { specialist: p.specialist, answer: rd.answer || p.briefing };
+        }));
+
+        const synthR = await fetch('/api/synthesize', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ originalMessage: text, results })
+        });
+        const synthData = await synthR.json();
+        document.getElementById('specialistAnswer').innerHTML = `<div class="demo-answer">${escapeHtml(synthData.reply || '')}</div>`;
+      } else {
+        document.getElementById('specialistAnswer').innerHTML = `<div class="demo-answer">${escapeHtml(parsed.reply || '')}</div>`;
+      }
+      document.getElementById('continueFromSpecialist').style.display = 'block';
+    } catch(err){
+      console.error(err);
+      document.getElementById('specialistStream').innerHTML = '<div class="advisor-sub">Something went wrong, but you can continue.</div>';
+      document.getElementById('continueFromSpecialist').style.display = 'block';
+    }
+  }
+
+  async function saveRuleDemo(){
+    const text = document.getElementById('ruleDemoInput').value.trim();
+    if(!text) return;
+    try{
+      const response = await fetch('/api/classify-rule', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      const parsed = await response.json();
+      await sb.from('rules').insert({ user_id: currentUser.id, text, status: parsed.status || 'best-effort', reason: parsed.reason || '' });
+    } catch(err){
+      console.error(err);
+    }
+    finishIntake();
+  }
+
+  function finishIntake(){
+    goToScene('ending');
+    document.getElementById('closingLine1').textContent = "Most AI starts over every time. I won't.";
+    document.getElementById('closingLine2').textContent = "That's the whole point of tonight.";
+    setTimeout(() => { window.location.href = 'app.html'; }, 3200);
+  }
+
+  requireAuth();
+</script>
+</body>
+</html>
