@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINEOG — Sign in</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --plum:#1A1035; --plum-soft:#261A47; --lav:#FAF8FF; --lav-dim:#F0ECFB;
+    --coral:#FF6B4A; --coral-soft:#FF8A6E; --mint:#6BCB9E; --ink:#1B1730;
+    --slate:#6B678A; --slate-light:#A8A3C7; --line: rgba(27,23,48,0.10);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:radial-gradient(circle at 50% 0%, var(--plum-soft) 0%, var(--plum) 55%);
+    min-height:100vh; font-family:'Inter',sans-serif; color:var(--lav);
+    display:flex; align-items:center; justify-content:center; padding:32px 20px;
+  }
+  .wrap{width:100%; max-width:400px;}
+  header{display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:32px;}
+  .mark{width:8px; height:8px; border-radius:50%; background:var(--coral);}
+  .brand{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:var(--slate-light);}
+  .brand b{color:var(--coral-soft);}
+  .beta-badge{
+    font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:10px; letter-spacing:0.1em;
+    color:var(--coral-soft); background:rgba(255,107,74,0.1); border:1px solid rgba(255,107,74,0.25);
+    padding:3px 9px; border-radius:100px; animation:beta-glow 2.8s ease-in-out infinite;
+  }
+  @keyframes beta-glow{
+    0%,100%{ box-shadow:0 0 0 rgba(255,107,74,0); }
+    50%{ box-shadow:0 0 10px rgba(255,107,74,0.35); }
+  }
+
+  .auth-card{
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    border-radius:20px; padding:32px 28px;
+  }
+  h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:24px; text-align:center; margin-bottom:6px;}
+  .sub{color:var(--slate-light); font-size:13.5px; text-align:center; margin-bottom:26px;}
+
+  .mode-toggle{display:flex; background:rgba(255,255,255,0.06); border-radius:100px; padding:4px; margin-bottom:24px;}
+  .mode-btn{
+    flex:1; font-family:'Inter',sans-serif; font-weight:600; font-size:13px; color:var(--slate-light);
+    background:none; border:none; padding:9px; border-radius:100px; cursor:pointer;
+  }
+  .mode-btn.active{background:var(--coral); color:#fff;}
+
+  form{display:none;}
+  form.active{display:block;}
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--slate-light);
+    text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;
+  }
+  .field input{
+    width:100%; font-family:'Inter',sans-serif; font-size:14.5px; padding:11px 14px;
+    border:1px solid rgba(255,255,255,0.12); border-radius:10px; background:rgba(255,255,255,0.05); color:var(--lav);
+  }
+  .field input::placeholder{color:var(--slate-light);}
+  .field input:focus{outline:2px solid var(--coral); outline-offset:1px;}
+
+  .submit-btn{
+    width:100%; font-family:'Inter',sans-serif; font-weight:600; font-size:15px; color:#fff;
+    background:var(--coral); border:none; border-radius:100px; padding:13px; cursor:pointer; margin-top:6px;
+  }
+  .submit-btn:disabled{opacity:0.5; cursor:default;}
+
+  .msg{font-size:13px; margin-top:14px; padding:10px 14px; border-radius:10px; display:none;}
+  .msg.show{display:block;}
+  .msg.error{background:rgba(255,107,74,0.12); color:var(--coral-soft); border:1px solid rgba(255,107,74,0.25);}
+  .msg.success{background:rgba(107,203,158,0.1); color:var(--mint); border:1px solid rgba(107,203,158,0.25);}
+
+  footer{text-align:center; margin-top:22px; font-size:12px; color:var(--slate-light);}
+  footer a{color:var(--slate-light);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="mark"></span>
+    <span class="brand">the <b>premium</b> LINEOG</span>
+    <span class="beta-badge">BETA</span>
+  </header>
+
+  <div class="auth-card">
+    <h1 id="cardTitle">Welcome back</h1>
+    <p class="sub" id="cardSub">Sign in to LINEOG.</p>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="signinTab" onclick="setMode('signin')">Sign in</button>
+      <button class="mode-btn" id="signupTab" onclick="setMode('signup')">Create account</button>
+    </div>
+
+    <form id="signinForm" class="active" onsubmit="return handleSignIn(event)">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="signinEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="signinPassword" placeholder="••••••••" required>
+      </div>
+      <button class="submit-btn" type="submit" id="signinBtn">Sign in</button>
+    </form>
+
+    <form id="signupForm" onsubmit="return handleSignUp(event)">
+      <div class="field">
+        <label>Name</label>
+        <input type="text" id="signupName" placeholder="Your name" required>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="signupEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6">
+      </div>
+      <button class="submit-btn" type="submit" id="signupBtn">Create account</button>
+    </form>
+
+    <div class="msg" id="authMsg"></div>
+  </div>
+
+  <footer>
+    <a href="lineog.html">← Back to LINEOG</a>
+  </footer>
+</div>
+
+<script>
+  // ============================================================
+  // SETUP REQUIRED: paste your real Supabase project values below.
+  // Find them in your Supabase project: Settings → API.
+  // The "anon" key is meant to be public and safe to expose here,
+  // Supabase's security model enforces access with Row Level
+  // Security policies on the database, not by hiding this key.
+  // This is different from the Anthropic key, which must stay
+  // server-side, and it's why this one is safe to leave in the
+  // browser code.
+  // ============================================================
+  const SUPABASE_URL = "https://bdqxglqczqcsjaziaanc.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkcXhnbHFjenFjc2phemlhYW5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1Mjg5NzMsImV4cCI6MjA5OTEwNDk3M30.-i0UgUlG9X9lMMOxKQRmoWUIaZB0VJyii-G22EPsb6s";
+
+  let sb = null;
+  const isConfigured = SUPABASE_URL !== "YOUR_SUPABASE_PROJECT_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY";
+
+  if(isConfigured){
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else {
+    document.getElementById('signinBtn').disabled = true;
+    document.getElementById('signupBtn').disabled = true;
+  }
+
+  function setMode(mode){
+    const isSignin = mode === 'signin';
+    document.getElementById('signinTab').classList.toggle('active', isSignin);
+    document.getElementById('signupTab').classList.toggle('active', !isSignin);
+    document.getElementById('signinForm').classList.toggle('active', isSignin);
+    document.getElementById('signupForm').classList.toggle('active', !isSignin);
+    document.getElementById('cardTitle').textContent = isSignin ? 'Welcome back' : 'Create your LINEOG account';
+    document.getElementById('cardSub').textContent = isSignin ? 'Sign in to LINEOG.' : 'Real account, real security, yours alone.';
+    hideMsg();
+  }
+
+  function showMsg(text, type){
+    const el = document.getElementById('authMsg');
+    el.textContent = text;
+    el.className = 'msg show ' + type;
+  }
+  function hideMsg(){
+    document.getElementById('authMsg').className = 'msg';
+  }
+
+  async function handleSignIn(e){
+    e.preventDefault();
+    if(!isConfigured) return false;
+    hideMsg();
+    const btn = document.getElementById('signinBtn');
+    btn.disabled = true;
+
+    const email = document.getElementById('signinEmail').value.trim();
+    const password = document.getElementById('signinPassword').value;
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    btn.disabled = false;
+    if(error){
+      showMsg(error.message, 'error');
+      return false;
+    }
+    showMsg('Signed in. Taking you to LINEOG...', 'success');
+    setTimeout(() => { window.location.href = 'lineog-v01-prototype.html'; }, 800);
+    return false;
+  }
+
+  async function handleSignUp(e){
+    e.preventDefault();
+    if(!isConfigured) return false;
+    hideMsg();
+    const btn = document.getElementById('signupBtn');
+    btn.disabled = true;
+
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: name } }
+    });
+
+    btn.disabled = false;
+    if(error){
+      showMsg(error.message, 'error');
+      return false;
+    }
+    showMsg('Account created. Check your email to verify before signing in.', 'success');
+    document.getElementById('signupForm').reset();
+    return false;
+  }
+
+  // If someone's already signed in, skip straight to the vault.
+  async function checkExistingSession(){
+    if(!isConfigured) return;
+    const { data } = await sb.auth.getSession();
+    if(data.session){
+      window.location.href = 'lineog-v01-prototype.html';
+    }
+  }
+  checkExistingSession();
+</script>
+</body>
+</html>
