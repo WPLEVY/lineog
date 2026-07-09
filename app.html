@@ -95,7 +95,6 @@
   /* CHAT VIEW */
   #chatLog{flex:1; overflow-y:auto; padding:20px 24px 8px; max-width:640px; margin:0 auto; width:100%;}
   .msg-row{margin-bottom:18px; position:relative;}
-  .msg-row:hover .commit-btn{opacity:1;}
   .bubble{
     padding:13px 16px; border-radius:14px; font-size:14.5px; line-height:1.55; max-width:78%;
     display:inline-block; white-space:pre-wrap;
@@ -103,22 +102,20 @@
   .msg-row.user{text-align:right;}
   .msg-row.user .bubble{background:var(--coral); color:#fff;}
   .msg-row.ai .bubble{background:none; border:none; padding:2px 0; max-width:100%; color:var(--lav);}
-  .commit-btn{
-    opacity:0; transition:opacity .15s ease; font-family:'IBM Plex Mono',monospace; font-size:10.5px;
-    color:var(--coral-soft); background:rgba(255,107,74,0.14); border:none; padding:3px 9px; border-radius:100px;
-    cursor:pointer; margin-top:5px; display:inline-block;
+  .auto-notice{
+    display:block; margin-top:8px; font-size:11.5px; color:var(--slate-light); font-family:'IBM Plex Mono',monospace;
   }
-  .msg-row.user .commit-btn{margin-right:0;}
-  .suggest-chip{
-    display:inline-flex; align-items:center; gap:8px; margin-top:8px;
-    background:rgba(107,203,158,0.12); border:1px solid rgba(107,203,158,0.35);
-    padding:8px 12px; border-radius:10px; font-size:12.5px; color:var(--lav);
+  .auto-notice b{color:var(--mint); font-family:'Inter',sans-serif; font-weight:600;}
+  .auto-notice button{
+    font-family:'Inter',sans-serif; font-size:11px; color:var(--slate-light); background:none;
+    border:none; text-decoration:underline; cursor:pointer; margin-left:6px;
   }
-  .suggest-chip button{
-    font-family:'Inter',sans-serif; font-weight:600; font-size:11.5px; color:var(--plum);
-    background:var(--mint); border:none; padding:4px 10px; border-radius:100px; cursor:pointer;
+  .save-icon-btn{
+    opacity:0; transition:opacity .15s ease; background:none; border:none; cursor:pointer;
+    font-size:13px; margin-top:4px; padding:2px 6px;
   }
-  .suggest-chip .dismiss{background:transparent; color:var(--slate-light); border:1px solid rgba(255,255,255,0.15);}
+  .msg-row:hover .save-icon-btn{opacity:0.5;}
+  .save-icon-btn:hover{opacity:1 !important;}
 
   .thinking-row{color:var(--slate-light); font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:6px 0;}
 
@@ -201,6 +198,11 @@
     50%{ left:110%; }
     100%{ left:110%; }
   }
+  .vault-back-btn{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13px; color:var(--lav);
+    background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
+    padding:9px 16px; border-radius:100px; cursor:pointer;
+  }
   .export-btn{
     font-family:'Inter',sans-serif; font-weight:600; font-size:13px; color:var(--lav);
     background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
@@ -218,6 +220,22 @@
     padding:36px 32px; max-width:340px; width:90%; text-align:center;
     box-shadow:0 30px 70px -20px rgba(0,0,0,0.5);
   }
+  .modal-input{
+    width:100%; font-family:'Inter',sans-serif; font-size:14.5px; padding:11px 14px;
+    border:1px solid rgba(255,255,255,0.15); border-radius:10px; background:rgba(0,0,0,0.2); color:var(--lav);
+  }
+  .modal-input::placeholder{color:var(--slate-light);}
+  .submit-btn{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:14px; color:#fff;
+    background:var(--coral); border:none; border-radius:100px; padding:10px 22px; cursor:pointer;
+  }
+  .picker-item{
+    display:block; width:100%; text-align:left; font-family:'Inter',sans-serif; font-size:13.5px;
+    color:var(--lav); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+    padding:10px 14px; border-radius:10px; margin-bottom:6px; cursor:pointer;
+  }
+  .picker-item:hover{background:rgba(255,107,74,0.12); border-color:rgba(255,107,74,0.3);}
+  .picker-item.none{color:var(--slate-light); font-style:italic;}
   .pin-lock{font-size:28px; margin-bottom:14px; filter:drop-shadow(0 0 10px rgba(255,107,74,0.4));}
   .pin-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; color:var(--lav); margin-bottom:6px;}
   .pin-hint{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--slate-light); margin-bottom:20px;}
@@ -289,22 +307,12 @@
   }
   .project-activate-btn.active{background:var(--coral); border-color:var(--coral);}
 
-  #relatedProjectRow{
+  #relatedProjectRow, #relatedProjectRowSearch{
     display:flex; justify-content:center; align-items:center; gap:10px; padding:8px 24px;
     font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--slate-light); max-width:640px; margin:0 auto; width:100%;
   }
   #relatedProjectRow button{
     font-family:'Inter',sans-serif; font-size:11px; color:var(--coral-soft); background:none; border:none; cursor:pointer; text-decoration:underline;
-  }
-
-  .project-chip{
-    background:rgba(255,107,74,0.08); border:1px solid rgba(255,107,74,0.22); border-radius:12px;
-    padding:12px 16px; font-size:12.5px; color:var(--slate-light); max-width:70%; margin-top:10px;
-    display:flex; justify-content:space-between; align-items:center; gap:10px;
-  }
-  .project-chip button{
-    font-family:'Inter',sans-serif; font-weight:600; font-size:11.5px; color:#fff;
-    background:var(--coral); border:none; padding:6px 12px; border-radius:100px; cursor:pointer; flex-shrink:0;
   }
 
   #rulesWrap{max-width:640px; margin:0 auto; padding:32px 24px; overflow-y:auto; flex:1; width:100%;}
@@ -383,7 +391,7 @@
     <div class="quiet-links">
       <button class="quiet-link" onclick="switchView('projects')">Projects</button>
       <button class="quiet-link" onclick="switchView('rules')">Rules</button>
-      <button class="quiet-link" onclick="requestPinThen(() => switchView('vault'))">My Vault</button>
+      <button class="quiet-link" onclick="openVault()">My Vault</button>
     </div>
   </nav>
 
@@ -412,24 +420,31 @@
         <button id="searchBtn" onclick="doSearch()">Ask</button>
       </div>
       <div id="searchResult"></div>
+      <div id="relatedProjectRowSearch" style="margin-top:20px;">
+        <span id="relatedProjectLabelSearch">No related project</span>
+        <button onclick="pickProject()">Change</button>
+      </div>
     </div>
   </div>
 
   <div class="view" id="view-projects">
     <div id="projectsWrap">
       <div class="projects-header">
-        <h2>Your projects</h2>
+        <h2>Projects</h2>
         <button id="newProjectBtn" onclick="createProject()">+ New Project</button>
       </div>
-      <p class="hint">Not folders, living engagements. Each one carries its own mission, open questions, and decisions.</p>
+      <p class="hint">Living engagements, not folders.</p>
       <div id="projectsList"></div>
     </div>
   </div>
 
   <div class="view" id="view-rules">
     <div id="rulesWrap">
-      <h2>Your rules</h2>
-      <p class="hint">How you want your AI to behave. Applied to every conversation, honestly labeled by what LINEOG can actually guarantee today.</p>
+      <div class="projects-header">
+        <h2>Rules</h2>
+        <button id="addRuleHeaderBtn" onclick="document.getElementById('ruleInput').focus()">+ Add Rule</button>
+      </div>
+      <p class="hint">Make rules for your advisors here.</p>
       <div class="rules-add-row">
         <input type="text" id="ruleInput" placeholder="How should your advisor behave?">
         <button id="ruleAddBtn" onclick="addRule()">Add rule</button>
@@ -445,6 +460,7 @@
     </div>
     <div id="vaultContent" class="vault-content">
       <div class="vault-header">
+        <button class="vault-back-btn" onclick="switchView('chat')">← Back</button>
         <div class="encrypted-badge">
           <span class="encrypted-badge-icon">🔐</span>
           <span class="encrypted-badge-text">ENCRYPTED</span>
@@ -458,17 +474,42 @@
   </div>
 </div>
 
+<div class="pin-overlay" id="pickerOverlay">
+  <div class="pin-card" style="max-width:360px;">
+    <div class="pin-title">Related project</div>
+    <div id="pickerList" style="margin:16px 0; text-align:left;"></div>
+    <div id="pickerEmptyCreate" style="display:none;">
+      <input type="text" id="pickerNewName" class="modal-input" placeholder="Name of Project" style="margin-bottom:10px;">
+      <button class="submit-btn" onclick="createProjectFromPicker()" style="width:100%;">Create and link</button>
+    </div>
+    <button class="pin-cancel" onclick="document.getElementById('pickerOverlay').classList.remove('show')" style="margin-top:12px;">Close</button>
+  </div>
+</div>
+
+<div class="pin-overlay" id="genericModalOverlay">
+  <div class="pin-card">
+    <div class="pin-title" id="modalTitle">Title</div>
+    <div class="pin-hint" id="modalHint" style="margin-bottom:16px;"></div>
+    <input type="text" id="modalInput" class="modal-input">
+    <div style="margin-top:16px;">
+      <button class="submit-btn" onclick="modalConfirm()" style="width:auto; display:inline-block; padding:10px 22px;">Save</button>
+      <button class="pin-cancel" onclick="modalCancel()" style="margin-left:10px;">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="pin-overlay" id="pinOverlay">
   <div class="pin-card">
     <div class="pin-lock">🔐</div>
     <div class="pin-title" id="pinTitle">Set your vault PIN</div>
-    <div class="pin-hint" id="pinHint">Choose 4 digits. You'll need this every time.</div>
+    <div class="pin-hint" id="pinHint">Choose 4 digits. This is a local privacy lock, not your account security.</div>
     <div class="pin-dots" id="pinDots">
       <span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span><span class="pin-dot"></span>
     </div>
     <div class="pin-error-msg" id="pinErrorMsg"></div>
     <input type="tel" id="pinHiddenInput" maxlength="4" inputmode="numeric" autocomplete="off">
     <button class="pin-cancel" onclick="cancelPin()">Cancel</button>
+    <button class="pin-cancel" onclick="resetPin()" style="margin-left:14px;">Forgot PIN?</button>
   </div>
 </div>
 
@@ -501,11 +542,52 @@
     requestPinThen(() => switchView('vault'));
   }
 
+  // ---------- GENERIC MODAL (replaces native prompt() everywhere) ----------
+  let modalResolve = null;
+
+  function showModal(title, hint, defaultValue){
+    return new Promise((resolve) => {
+      modalResolve = resolve;
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalHint').textContent = hint || '';
+      const input = document.getElementById('modalInput');
+      input.value = defaultValue || '';
+      document.getElementById('genericModalOverlay').classList.add('show');
+      setTimeout(() => input.focus(), 50);
+    });
+  }
+
+  function modalConfirm(){
+    const value = document.getElementById('modalInput').value.trim();
+    document.getElementById('genericModalOverlay').classList.remove('show');
+    if(modalResolve) modalResolve(value || null);
+    modalResolve = null;
+  }
+
+  function modalCancel(){
+    document.getElementById('genericModalOverlay').classList.remove('show');
+    if(modalResolve) modalResolve(null);
+    modalResolve = null;
+  }
+
+  document.getElementById('modalInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){ e.preventDefault(); modalConfirm(); }
+  });
+
   // ---------- PIN GATE ----------
   let vaultPin = null;
+  let vaultUnlockedThisSession = false;
   let pinMode = null; // 'create' or 'verify'
   let pinBuffer = '';
   let pendingAction = null;
+
+  function openVault(){
+    if(vaultUnlockedThisSession){
+      switchView('vault');
+    } else {
+      requestPinThen(() => switchView('vault'));
+    }
+  }
 
   async function loadPin(){
     try{
@@ -519,16 +601,17 @@
   function requestPinThen(action){
     pendingAction = action;
     pinBuffer = '';
+    document.getElementById('pinHiddenInput').value = '';
     updatePinDots();
     document.getElementById('pinErrorMsg').textContent = '';
     if(!vaultPin){
       pinMode = 'create';
       document.getElementById('pinTitle').textContent = 'Set your vault PIN';
-      document.getElementById('pinHint').textContent = "Choose 4 digits. You'll need this every time.";
+      document.getElementById('pinHint').textContent = "Choose 4 digits. This is a local privacy lock on this device, not your account security.";
     } else {
       pinMode = 'verify';
       document.getElementById('pinTitle').textContent = 'Enter your vault PIN';
-      document.getElementById('pinHint').textContent = 'Only you know this.';
+      document.getElementById('pinHint').textContent = 'This local privacy lock, only you know it.';
     }
     document.getElementById('pinOverlay').classList.add('show');
     setTimeout(() => document.getElementById('pinHiddenInput').focus(), 50);
@@ -537,7 +620,21 @@
   function cancelPin(){
     document.getElementById('pinOverlay').classList.remove('show');
     pinBuffer = '';
+    document.getElementById('pinHiddenInput').value = '';
     pendingAction = null;
+  }
+
+  async function resetPin(){
+    if(!confirm('Reset your vault PIN? You\'ll set a new one right now.')) return;
+    try{ await window.storage.delete('lineog-vault-pin', false); } catch(e){ console.error(e); }
+    vaultPin = null;
+    pinBuffer = '';
+    document.getElementById('pinHiddenInput').value = '';
+    updatePinDots();
+    document.getElementById('pinErrorMsg').textContent = '';
+    pinMode = 'create';
+    document.getElementById('pinTitle').textContent = 'Set a new vault PIN';
+    document.getElementById('pinHint').textContent = "Choose 4 digits. This is a local privacy lock, not your account security.";
   }
 
   function updatePinDots(){
@@ -548,13 +645,19 @@
   async function handlePinComplete(){
     if(pinMode === 'create'){
       vaultPin = pinBuffer;
+      vaultUnlockedThisSession = true;
       try{ await window.storage.set('lineog-vault-pin', vaultPin, false); } catch(e){ console.error(e); }
       document.getElementById('pinOverlay').classList.remove('show');
+      pinBuffer = '';
+      document.getElementById('pinHiddenInput').value = '';
       const action = pendingAction; pendingAction = null;
       if(action) action();
     } else {
       if(pinBuffer === vaultPin){
+        vaultUnlockedThisSession = true;
         document.getElementById('pinOverlay').classList.remove('show');
+        pinBuffer = '';
+        document.getElementById('pinHiddenInput').value = '';
         const action = pendingAction; pendingAction = null;
         if(action) action();
       } else {
@@ -562,7 +665,9 @@
         document.querySelectorAll('.pin-dot').forEach(d => d.classList.add('error'));
         setTimeout(() => document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('error')), 300);
         pinBuffer = '';
+        document.getElementById('pinHiddenInput').value = '';
         updatePinDots();
+        setTimeout(() => document.getElementById('pinHiddenInput').focus(), 50);
       }
     }
   }
@@ -647,9 +752,7 @@
 
   // ---------- PROJECTS (living advisors, not folders) ----------
   let projects = [];
-  let activeProject = null; // the project explicitly linked to the current conversation
-  let exchangeCount = 0;
-  let projectChipShown = false;
+  let activeProject = null; // the currently linked project, auto-detected or manually chosen, always correctable
 
   async function loadProjects(){
     const { data, error } = await sb.from('projects').select('*').eq('user_id', currentUser.id).order('last_activity', { ascending: false });
@@ -662,8 +765,8 @@
   }
 
   async function createProject(){
-    const name = prompt('Name this project:');
-    if(!name || !name.trim()) return;
+    const name = await showModal('Name of Project', '');
+    if(!name) return;
     const { data, error } = await sb.from('projects').insert({ user_id: currentUser.id, name: name.trim() }).select().single();
     if(error){
       console.error('Could not create project', error);
@@ -676,7 +779,7 @@
 
   async function editProjectField(projectId, field, currentValue){
     const label = field === 'mission' ? 'Mission' : 'Current objective';
-    const newValue = prompt(`${label}:`, currentValue || '');
+    const newValue = await showModal(label, '', currentValue || '');
     if(newValue === null) return;
     const { error } = await sb.from('projects').update({ [field]: newValue.trim() }).eq('id', projectId);
     if(error){ console.error('Could not update project', error); return; }
@@ -707,29 +810,47 @@
 
   function setActiveProject(project){
     activeProject = project;
+    const labelText = project ? `Related project: ${project.name}` : 'No related project';
     const label = document.getElementById('relatedProjectLabel');
-    label.textContent = project ? `Related project: ${project.name}` : 'No related project';
+    if(label) label.textContent = labelText;
+    const labelSearch = document.getElementById('relatedProjectLabelSearch');
+    if(labelSearch) labelSearch.textContent = labelText;
   }
 
   function pickProject(){
+    const list = document.getElementById('pickerList');
+    const emptyCreate = document.getElementById('pickerEmptyCreate');
+
     if(projects.length === 0){
-      alert('No projects yet. Create one from the Projects tab first.');
-      return;
+      list.innerHTML = '';
+      emptyCreate.style.display = 'block';
+    } else {
+      emptyCreate.style.display = 'none';
+      list.innerHTML = `
+        <button class="picker-item none" onclick="setActiveProject(null); document.getElementById('pickerOverlay').classList.remove('show');">None</button>
+        ${projects.map(p => `<button class="picker-item" onclick='setActiveProject(${JSON.stringify(p)}); document.getElementById("pickerOverlay").classList.remove("show");'>${escapeHtml(p.name)}</button>`).join('')}
+      `;
     }
-    const names = projects.map((p, i) => `${i + 1}. ${p.name}`).join('\n');
-    const choice = prompt(`Which project is this conversation part of? Type a number, or 0 for none.\n\n0. None\n${names}`);
-    if(choice === null) return;
-    const idx = parseInt(choice, 10);
-    if(idx === 0 || isNaN(idx)) { setActiveProject(null); return; }
-    const p = projects[idx - 1];
-    if(p) setActiveProject(p);
+    document.getElementById('pickerOverlay').classList.add('show');
+  }
+
+  async function createProjectFromPicker(){
+    const nameInput = document.getElementById('pickerNewName');
+    const name = nameInput.value.trim();
+    if(!name) return;
+    const { data, error } = await sb.from('projects').insert({ user_id: currentUser.id, name }).select().single();
+    if(error){ console.error('Could not create project', error); return; }
+    projects.unshift(data);
+    setActiveProject(data);
+    nameInput.value = '';
+    document.getElementById('pickerOverlay').classList.remove('show');
   }
 
   async function renderProjects(){
     await loadProjects();
     const list = document.getElementById('projectsList');
     if(projects.length === 0){
-      list.innerHTML = '<div class="vault-empty">No projects yet. Start one above, or LINEOG will suggest one once a conversation looks like it needs it.</div>';
+      list.innerHTML = '<div class="vault-empty">Nothing here yet.</div>';
       return;
     }
 
@@ -782,33 +903,33 @@
     list.innerHTML = rendered.join('');
   }
 
-  function maybeShowProjectChip(){
-    if(projectChipShown || activeProject || exchangeCount < 4) return;
-    projectChipShown = true;
-    const log = document.getElementById('chatLog');
-    const row = document.createElement('div');
-    row.className = 'msg-row ai';
-    row.innerHTML = `
-      <div class="project-chip">
-        <span>This conversation appears to be evolving into a project.</span>
-        <button onclick="createProjectFromChip(this)">Create Project</button>
-      </div>`;
-    log.appendChild(row);
-    log.scrollTop = log.scrollHeight;
-  }
-
-  async function createProjectFromChip(btn){
-    const p = await createProject();
-    if(p){
-      setActiveProject(p);
-      btn.parentElement.remove();
+  async function handleProjectDecision(decision, rowElement){
+    if(!decision) return;
+    if(decision.action === 'existing' && decision.projectId){
+      const p = projects.find(x => x.id === decision.projectId);
+      if(p){
+        setActiveProject(p);
+        const notice = document.createElement('div');
+        notice.className = 'auto-notice';
+        notice.innerHTML = `Linked to your project: <b>${escapeHtml(p.name)}</b><button onclick="setActiveProject(null); this.parentElement.remove();">Undo</button>`;
+        rowElement.appendChild(notice);
+      }
+    } else if(decision.action === 'new' && decision.suggestedName){
+      const { data, error } = await sb.from('projects').insert({ user_id: currentUser.id, name: decision.suggestedName }).select().single();
+      if(error){ console.error('Could not auto-create project', error); return; }
+      projects.unshift(data);
+      setActiveProject(data);
+      const notice = document.createElement('div');
+      notice.className = 'auto-notice';
+      notice.innerHTML = `Started tracking this as a project: <b>${escapeHtml(data.name)}</b><button onclick="setActiveProject(null); this.parentElement.remove();">Undo</button>`;
+      rowElement.appendChild(notice);
     }
   }
 
   function renderRules(){
     const list = document.getElementById('rulesList');
     if(rules.length === 0){
-      list.innerHTML = '<div class="vault-empty" style="margin-top:0;">No rules yet. Add one above.</div>';
+      list.innerHTML = '<div class="vault-empty" style="margin-top:0;">Nothing here yet.</div>';
       return;
     }
     list.innerHTML = rules.map(r => `
@@ -948,13 +1069,7 @@
     row.appendChild(attribution);
 
     if(suggestedCommit){
-      const slot = row.querySelector('.suggest-slot');
-      slot.innerHTML = `
-        <div class="suggest-chip">
-          📌 Worth remembering: <b>${escapeHtml(suggestedCommit.label)}: ${escapeHtml(suggestedCommit.value)}</b>
-          <button onclick="acceptSuggestion(this, '${escapeHtml(suggestedCommit.label)}', '${escapeHtml(suggestedCommit.value)}')">Commit</button>
-          <button class="dismiss" onclick="this.parentElement.remove()">Not now</button>
-        </div>`;
+      await autoPreserve(suggestedCommit.label, suggestedCommit.value, row);
     }
   }
 
@@ -966,7 +1081,7 @@
     const displayText = role === 'ai' ? formatReply(text) : escapeHtml(text);
     row.innerHTML = `
       <div class="bubble">${displayText}</div><br>
-      <button class="commit-btn" onclick="quickCommit('${rowId}')">📌 Commit this</button>
+      <button class="save-icon-btn" onclick="manualSave('${rowId}')" title="Save this">💾</button>
       <div class="suggest-slot"></div>
     `;
     log.appendChild(row);
@@ -974,22 +1089,45 @@
     return row;
   }
 
-  function quickCommit(rowId){
+  async function manualSave(rowId){
     const row = document.getElementById(rowId);
     const text = row.querySelector('.bubble').textContent;
-    const label = prompt('Save this as (label):', 'Note');
-    if(label === null) return;
+    const label = await showModal('Save this as', '', 'Note');
+    if(!label) return;
     addCommit(label, text);
   }
 
   async function addCommit(label, value){
-    const { data, error } = await sb.from('facts').insert({ user_id: currentUser.id, label, value }).select().single();
+    const { data, error } = await sb.from('facts').insert({ user_id: currentUser.id, label, value, project_id: activeProject ? activeProject.id : null }).select().single();
     if(error){
       console.error('Could not save fact', error);
       return;
     }
     commits.push({ id: data.id, label: data.label, value: data.value, date: data.created_at, lastReferenced: data.last_referenced });
     renderTimeline();
+  }
+
+  async function autoPreserve(label, value, rowElement){
+    const { data, error } = await sb.from('facts').insert({ user_id: currentUser.id, label, value, project_id: activeProject ? activeProject.id : null }).select().single();
+    if(error){
+      console.error('Could not save fact', error);
+      return;
+    }
+    commits.push({ id: data.id, label: data.label, value: data.value, date: data.created_at, lastReferenced: data.last_referenced });
+    renderTimeline();
+
+    const notice = document.createElement('div');
+    notice.className = 'auto-notice';
+    notice.innerHTML = `I've updated my understanding: <b>${escapeHtml(label)}: ${escapeHtml(value)}</b><button onclick="undoAutoPreserve('${data.id}', this)">Undo</button>`;
+    rowElement.appendChild(notice);
+  }
+
+  async function undoAutoPreserve(factId, btn){
+    const { error } = await sb.from('facts').delete().eq('id', factId);
+    if(error){ console.error('Could not undo', error); return; }
+    commits = commits.filter(c => c.id !== factId);
+    renderTimeline();
+    btn.parentElement.textContent = 'Undone.';
   }
 
   async function sendMessage(){
@@ -1014,7 +1152,10 @@
       const response = await fetch('/api/premium-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, commits, rules, projectContext: activeProject })
+        body: JSON.stringify({
+          message: text, commits, rules, projectContext: activeProject,
+          existingProjects: activeProject ? [] : projects.filter(p => p.status === 'active').map(p => ({ id: p.id, name: p.name }))
+        })
       });
       const parsed = await response.json();
       if(!response.ok || parsed.error){
@@ -1023,23 +1164,23 @@
 
       thinkRow.remove();
 
+      let aiRowId;
       if(parsed.complex && parsed.specialistPlan && parsed.specialistPlan.length){
-        const aiRowId = 'row-' + Date.now() + '-ai';
+        aiRowId = 'row-' + Date.now() + '-ai';
         await runActivityStream(parsed.specialistPlan, text, aiRowId);
       } else {
-        const aiRowId = 'row-' + Date.now() + '-ai';
+        aiRowId = 'row-' + Date.now() + '-ai';
         const row = appendMessage('ai', parsed.reply, aiRowId);
         messages.push({ role: 'assistant', text: parsed.reply });
 
         if(parsed.suggestedCommit){
-          const slot = row.querySelector('.suggest-slot');
-          slot.innerHTML = `
-            <div class="suggest-chip">
-              📌 Worth remembering: <b>${escapeHtml(parsed.suggestedCommit.label)}: ${escapeHtml(parsed.suggestedCommit.value)}</b>
-              <button onclick="acceptSuggestion(this, '${escapeHtml(parsed.suggestedCommit.label)}', '${escapeHtml(parsed.suggestedCommit.value)}')">Commit</button>
-              <button class="dismiss" onclick="this.parentElement.remove()">Not now</button>
-            </div>`;
+          await autoPreserve(parsed.suggestedCommit.label, parsed.suggestedCommit.value, row);
         }
+      }
+
+      if(parsed.projectDecision){
+        const rowEl = document.getElementById(aiRowId);
+        if(rowEl) await handleProjectDecision(parsed.projectDecision, rowEl);
       }
 
       if(parsed.usedLabels && parsed.usedLabels.length){
@@ -1053,11 +1194,8 @@
         }
       }
 
-      exchangeCount++;
       if(activeProject){
         await sb.from('projects').update({ last_activity: new Date().toISOString() }).eq('id', activeProject.id);
-      } else {
-        maybeShowProjectChip();
       }
     } catch(err){
       thinkRow.remove();
@@ -1066,11 +1204,6 @@
     } finally {
       document.getElementById('sendBtn').disabled = false;
     }
-  }
-
-  async function acceptSuggestion(btn, label, value){
-    await addCommit(label, value);
-    btn.parentElement.innerHTML = '✓ Committed';
   }
 
   function escapeHtml(str){
@@ -1144,8 +1277,8 @@
   async function editFromVault(id){
     const c = commits.find(x => x.id === id);
     if(!c) return;
-    const newValue = prompt(`Update "${c.label}":`, c.value);
-    if(newValue === null || newValue.trim() === '') return;
+    const newValue = await showModal(`Update ${c.label}`, '', c.value);
+    if(!newValue) return;
     const { error } = await sb.from('facts').update({ value: newValue.trim() }).eq('id', id);
     if(error){
       console.error('Could not update fact', error);

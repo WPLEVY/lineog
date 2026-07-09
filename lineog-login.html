@@ -217,8 +217,23 @@
       return false;
     }
     showMsg('Signed in. Taking you to LINEOG...', 'success');
-    setTimeout(() => { window.location.href = 'app.html'; }, 800);
+
+    const isFirstTime = await checkFirstTimeUser(data.user.id);
+    setTimeout(() => {
+      window.location.href = isFirstTime ? 'intake.html' : 'app.html';
+    }, 800);
     return false;
+  }
+
+  async function checkFirstTimeUser(userId){
+    try{
+      const { count: peopleCount } = await sb.from('people').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+      const { count: rulesCount } = await sb.from('rules').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+      return (peopleCount || 0) === 0 && (rulesCount || 0) === 0;
+    } catch(err){
+      console.error('Could not check first-time status', err);
+      return false;
+    }
   }
 
   async function handleSignUp(e){
