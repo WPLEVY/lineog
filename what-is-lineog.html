@@ -68,8 +68,20 @@
   #dateOverlay{
     position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center;
     opacity:0; transition:opacity 1s ease; pointer-events:none;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 65%);
   }
   #dateOverlay.show{opacity:1;}
+  .calendar-box{
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:16px;
+    padding:24px 40px; text-align:center; backdrop-filter:blur(2px);
+  }
+  .calendar-day{
+    font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--slate-light);
+    text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px;
+  }
+  .calendar-date{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:42px; color:var(--lav);
+  }
 
   .stage-page{opacity:0; transition:opacity 1s ease;}
   .stage-page.show{opacity:1;}
@@ -188,44 +200,31 @@
   // quietly, at the moment of realization. No scroll involved at all.
 
   const script = [
-    { scene:2, text: 'Nobody heard another word.', hold:2800 },
     { scene:2, text: 'The meeting was over.', hold:2200 },
     { scene:2, text: "Not because the advisor wasn't intelligent.", hold:2600 },
-    { scene:2, text: 'Because nobody trusted them anymore.', accent:true, hold:3000 },
+    { scene:2, text: "Because the client didn't trust him anymore.", accent:true, hold:3000 },
     { scene:2, text: 'The moment you question your advisor,', hold:2000 },
-    { scene:2, text: 'you question every recommendation that follows.', hold:3200 },
+    { scene:2, text: "you question every recommendation they've ever made.", hold:3200 },
 
     { scene:3, page:[
-        "That isn't just an advisor's problem.",
-        "It's AI's problem."
-      ], accentLast:true, hold:3400 },
-    { scene:3, page:[
-        "We've all experienced AI amnesia.",
-        "It forgets the day. The time. The details."
-      ], hold:3800 },
-    { scene:3, page:[
-        "These aren't small things.",
-        "They're the details that change the answer."
-      ], hold:3800 },
-    { scene:3, text: "Intelligence alone isn't enough.", accent:true, hold:3200 },
+        "That isn't just an advisor problem. It's an AI problem.",
+        "We've all experienced AI amnesia. AI forgets the day. The time. The details.",
+        "These aren't small things. They're the details that matter.",
+        "Intelligence alone isn't enough."
+      ], accentLast:true, hold:6800 },
 
     { scene:4, page:[
-        "That's why we built <span class='lineog-word'>LINEOG</span>.",
-        "A permanent knowledge layer, your history, your decisions, remembered."
-      ], hold:4200 },
-    { scene:4, page:[
+        "That's why we built <span class='lineog-word'>LINEOG</span>. A permanent knowledge layer that remembers the details.",
         "No single AI is best at everything.",
-        "<span class='lineog-word'>LINEOG</span> brings together the strengths of the world's leading AI models."
-      ], hold:4400 },
-    { scene:4, text: "<span class='lineog-word'>LINEOG</span> figures that out for you.", accent:true, hold:3000 },
+        "<span class='lineog-word'>LINEOG</span> brings together the world's leading AI models, so you never have to wonder if you asked the right one."
+      ], accentLast:true, hold:7600 },
 
     { scene:5, page:[
         "Imagine an advisor that is brilliant... and trustworthy.",
         "One that never forgets who you are.",
-        "Never asks you to start over."
-      ], hold:4600 },
-    { scene:5, text: 'Trust is built over time.', accent:true, hold:2800 },
-    { scene:5, text: 'The next generation gives us advisors.', hold:2800 },
+        "Trust isn't built in a single conversation. It's built over time.",
+        "The next generation isn't just smarter. It's trustworthy."
+      ], hold:7200 },
     { scene:5, wordmark:true, big:true, hold:2800 },
     { scene:5, end:true, hold:0 }
   ];
