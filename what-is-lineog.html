@@ -51,12 +51,25 @@
   #wordmarkLayer.big .dot{width:11px; height:11px;}
 
   #signatureLayer{
-    position:absolute; inset:0; z-index:2; display:flex; align-items:flex-start; justify-content:center;
-    padding-top:14vh; gap:7px; opacity:0; transition:opacity 1.4s ease;
+    position:absolute; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; opacity:0; transition:opacity 1.4s ease; cursor:pointer;
   }
   #signatureLayer.show{opacity:1;}
-  #signatureLayer .dot{width:6px; height:6px; border-radius:50%; background:var(--coral); align-self:center;}
-  #signatureLayer .sig-word{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13px; letter-spacing:0.08em; color:var(--slate-light);}
+  #signatureLayer .sig-word{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; letter-spacing:0.08em; color:var(--slate-light);}
+  #signatureLayer .sig-hint{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--coral-soft); opacity:0.8;}
+  #signatureLayer.hidden{display:none;}
+
+  #meetingVideo{
+    position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:cover;
+    opacity:0; transition:opacity 1s ease;
+  }
+  #meetingVideo.show{opacity:1;}
+
+  #dateOverlay{
+    position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 1s ease; pointer-events:none;
+  }
+  #dateOverlay.show{opacity:1;}
 
   .stage-page{opacity:0; transition:opacity 1s ease;}
   .stage-page.show{opacity:1;}
@@ -127,6 +140,14 @@
 <div id="stage">
   <div id="ambient"></div>
 
+  <video id="meetingVideo" playsinline src="meeting-scene.mp4"></video>
+  <div id="dateOverlay">
+    <div class="calendar-box">
+      <div class="calendar-day">Monday</div>
+      <div class="calendar-date">Jul 6</div>
+    </div>
+  </div>
+
   <div id="textLayer">
     <p class="stage-line" id="currentLine"></p>
   </div>
@@ -135,8 +156,9 @@
     <span class="dot"></span><span class="word">LINEOG</span>
   </div>
 
-  <div id="signatureLayer">
-    <span class="dot"></span><span class="sig-word">LINEOG</span>
+  <div id="signatureLayer" onclick="beginExperience()">
+    <span class="sig-word">LINEOG</span>
+    <span class="sig-hint">Tap to begin, with sound</span>
   </div>
 
   <div id="waitingDots"><span></span><span></span><span></span></div>
@@ -153,6 +175,7 @@
 </div>
 
 <div id="controls">
+  <button id="restartBtn" onclick="restartSequence()">↺ Start Over</button>
   <button id="pauseBtn" onclick="togglePause()">❚❚ Pause</button>
   <button id="skipBtn" onclick="skipScene()">Skip →</button>
 </div>
@@ -165,18 +188,6 @@
   // quietly, at the moment of realization. No scroll involved at all.
 
   const script = [
-    { scene:0, signature:true, hold:1600 },
-
-    { scene:1, text: "...and that's exactly why this strategy gives your family the flexibility you're looking for.", hold:3200 },
-    { scene:1, text: '"That all makes sense. Thank you."', dim:true, hold:2400 },
-    { scene:1, wait:true, hold:2200 },
-    { scene:1, text: 'By the way... got any big plans for the Fourth?', hold:2400 },
-    { scene:1, wait:true, hold:3600 },
-    { scene:1, text: '"...It\'s Monday."', dim:true, hold:1800 },
-    { scene:1, text: '"July 6."', dim:true, hold:2400, shift:true },
-    { scene:1, wait:true, hold:1800 },
-    { scene:1, text: '"...Oh."', hold:2600 },
-
     { scene:2, text: 'Nobody heard another word.', hold:2800 },
     { scene:2, text: 'The meeting was over.', hold:2200 },
     { scene:2, text: "Not because the advisor wasn't intelligent.", hold:2600 },
@@ -230,6 +241,8 @@
   const ambientEl = document.getElementById('ambient');
   const finalEl = document.getElementById('finalScene');
   const signatureEl = document.getElementById('signatureLayer');
+  const videoEl = document.getElementById('meetingVideo');
+  const dateOverlayEl = document.getElementById('dateOverlay');
 
   function hideAll(){
     lineEl.classList.remove('show');
@@ -289,6 +302,11 @@
   }
 
   function togglePause(){
+    if(videoEl.classList.contains('show')){
+      if(videoEl.paused){ videoEl.play(); document.getElementById('pauseBtn').textContent = '❚❚ Pause'; }
+      else { videoEl.pause(); document.getElementById('pauseBtn').textContent = '▶ Play'; }
+      return;
+    }
     paused = !paused;
     document.getElementById('pauseBtn').textContent = paused ? '▶ Play' : '❚❚ Pause';
     if(paused){
@@ -299,6 +317,10 @@
   }
 
   function skipScene(){
+    if(videoEl.classList.contains('show')){
+      videoEl.currentTime = videoEl.duration;
+      return;
+    }
     if(idx >= script.length) return;
     clearTimeout(pendingTimeout);
     const startingScene = script[Math.max(0, idx - 1)].scene;
@@ -309,6 +331,27 @@
     paused = false;
     document.getElementById('pauseBtn').textContent = '❚❚ Pause';
     advance();
+  }
+
+  function restartSequence(){
+    clearTimeout(pendingTimeout);
+    idx = 0;
+    paused = false;
+    document.getElementById('pauseBtn').textContent = '❚❚ Pause';
+    ambientEl.classList.remove('dimmed');
+    finalEl.classList.remove('show');
+    finalEl.style.display = 'none';
+    document.getElementById('ctaButton').style.display = 'inline-block';
+    document.getElementById('ctaSub').style.display = 'block';
+    document.getElementById('waitlistForm').style.display = 'none';
+    document.getElementById('waitlistMsg').textContent = '';
+    hideAll();
+    videoEl.pause();
+    videoEl.currentTime = 0;
+    videoEl.classList.remove('show');
+    dateOverlayEl.classList.remove('show');
+    signatureEl.classList.remove('hidden');
+    signatureEl.classList.add('show');
   }
 
   function showWaitlistCapture(){
@@ -345,7 +388,27 @@
     return false;
   }
 
-  setTimeout(advance, 800);
+  function beginExperience(){
+    signatureEl.classList.add('hidden');
+    videoEl.classList.add('show');
+    videoEl.muted = false;
+    videoEl.play().catch(err => console.error('Playback needs a user gesture:', err));
+  }
+
+  videoEl.addEventListener('timeupdate', () => {
+    if(videoEl.duration && videoEl.currentTime >= videoEl.duration - 3.2){
+      dateOverlayEl.classList.add('show');
+    }
+  });
+
+  videoEl.addEventListener('ended', () => {
+    videoEl.classList.remove('show');
+    dateOverlayEl.classList.remove('show');
+    idx = 0; // the video has already played the meeting scene, real sequence starts here
+    advance();
+  });
+
+  signatureEl.classList.add('show');
 </script>
 </body>
 </html>
