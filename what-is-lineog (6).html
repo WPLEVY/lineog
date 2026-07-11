@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINEOG — Would you trust this advisor?</title>
+<meta name="description" content="A trusted advisor prepares before giving advice. LINEOG exists because intelligence isn't enough.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plum:#1A1035; --plum-soft:#261A47; --lav:#FAF8FF; --coral:#FF6B4A; --coral-soft:#FF8A6E; --slate-light:#A8A3C7;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html, body{
+    height:100%; overflow:hidden; background:#000; color:var(--lav); font-family:'Inter',sans-serif;
+  }
+  ::selection{background:var(--coral); color:#000;}
+
+  #stage{
+    position:fixed; inset:0; overflow:hidden;
+  }
+  #ambient{
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 40%, #241E44 0%, #0A0716 75%);
+    transition:background 2.5s ease;
+  }
+  #ambient.dimmed{
+    background:radial-gradient(ellipse at 50% 40%, #170F2E 0%, #050308 75%);
+  }
+
+  #textLayer{
+    position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center;
+    max-width:640px; margin:0 auto; padding:0 28px; text-align:center;
+  }
+  .stage-line{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(19px,3.4vw,28px);
+    line-height:1.55; color:var(--lav); opacity:0; transition:opacity 1s ease;
+  }
+  .stage-line.show{opacity:1;}
+  .stage-line.dim{font-family:'Inter',sans-serif; font-weight:400; font-size:clamp(15px,2.4vw,19px); color:var(--slate-light);}
+  .stage-line.accent{color:var(--coral-soft);}
+
+  #wordmarkLayer{
+    position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:9px; opacity:0; transition:opacity 1.2s ease;
+  }
+  #wordmarkLayer.show{opacity:1;}
+  #wordmarkLayer .dot{width:8px; height:8px; border-radius:50%; background:var(--coral);}
+  #wordmarkLayer span.word{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:var(--coral-soft); transition:font-size .6s ease;}
+  #wordmarkLayer.big span.word{font-size:40px; letter-spacing:0.01em;}
+  #wordmarkLayer.big .dot{width:11px; height:11px;}
+
+  #signatureLayer{
+    position:absolute; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; opacity:0; transition:opacity 1.4s ease; cursor:pointer;
+  }
+  #signatureLayer.show{opacity:1;}
+  #signatureLayer .sig-word{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; letter-spacing:0.08em; color:var(--slate-light);}
+  #signatureLayer .sig-hint{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--coral-soft); opacity:0.8;}
+  #signatureLayer.hidden{display:none;}
+
+  #meetingVideo{
+    position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:cover;
+    opacity:0; transition:opacity 1s ease;
+  }
+  #meetingVideo.show{opacity:1;}
+
+  #dateOverlay{
+    position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 1s ease; pointer-events:none;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 65%);
+  }
+  #dateOverlay.show{opacity:1;}
+  .calendar-box{
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.18); border-radius:16px;
+    padding:24px 40px; text-align:center; backdrop-filter:blur(2px);
+  }
+  .calendar-day{
+    font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--slate-light);
+    text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px;
+  }
+  .calendar-date{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:42px; color:var(--lav);
+  }
+
+  .stage-page{opacity:0; transition:opacity 1s ease;}
+  .stage-page.show{opacity:1;}
+  .page-line{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(17px,2.8vw,23px);
+    line-height:1.65; color:var(--lav); margin-bottom:16px;
+  }
+  .page-line:first-child{font-size:clamp(19px,3.2vw,26px);}
+  .page-line.accent{color:var(--coral-soft);}
+  .lineog-word{color:var(--coral-soft);}
+  .emphasis-word{color:var(--coral-soft);}
+
+  #waitingDots{
+    position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:6px; opacity:0; transition:opacity .4s ease;
+  }
+  #waitingDots.show{opacity:1;}
+  #waitingDots span{width:6px; height:6px; border-radius:50%; background:var(--slate-light); animation:dot-pulse 1.2s ease-in-out infinite;}
+  #waitingDots span:nth-child(2){animation-delay:.2s;}
+  #waitingDots span:nth-child(3){animation-delay:.4s;}
+  @keyframes dot-pulse{ 0%,80%,100%{opacity:0.25;} 40%{opacity:1;} }
+
+  #finalScene{
+    position:absolute; inset:0; z-index:2; align-items:center; justify-content:center; flex-direction:column;
+    text-align:center; max-width:520px; margin:0 auto; padding:0 28px;
+    opacity:0; transition:opacity 1.2s ease; display:none;
+  }
+  #finalScene.show{opacity:1;}
+  .become-btn{
+    display:inline-block; font-family:'Inter',sans-serif; font-weight:600; font-size:16px; color:#fff;
+    background:var(--coral); border:none; padding:16px 34px; border-radius:100px; cursor:pointer;
+    margin-top:30px; text-decoration:none; transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .become-btn:hover{transform:translateY(-2px); box-shadow:0 12px 30px -8px rgba(255,107,74,0.5);}
+  .final-sub{font-size:13px; color:var(--slate-light); margin-top:14px;}
+  #waitlistForm{display:none; gap:8px; justify-content:center; flex-wrap:wrap; max-width:360px; margin:20px auto 0;}
+  #waitlistForm input{
+    font-size:13.5px; padding:10px 14px; border-radius:100px; border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.05); color:var(--lav);
+  }
+  #waitlistForm button{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13px; color:#fff; background:var(--coral);
+    border:none; padding:10px 20px; border-radius:100px; cursor:pointer;
+  }
+  #waitlistMsg{font-size:12px; color:var(--coral-soft); margin-top:10px; min-height:16px;}
+
+  #controls{
+    position:fixed; bottom:22px; left:0; right:0; z-index:5; display:flex; gap:18px; justify-content:center;
+    opacity:0.35; transition:opacity .3s ease;
+  }
+  #controls:hover{opacity:0.9;}
+  #controls button{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate-light); background:none;
+    border:none; cursor:pointer; letter-spacing:0.04em;
+  }
+  #controls button:hover{color:var(--lav);}
+
+  #privacyLink{
+    position:fixed; bottom:22px; right:22px; z-index:5; font-family:'IBM Plex Mono',monospace; font-size:10px;
+    color:var(--slate-light); opacity:0.35; text-decoration:none;
+  }
+  #privacyLink:hover{opacity:0.8;}
+
+  @media (prefers-reduced-motion: reduce){
+    .stage-line, #wordmarkLayer, #finalScene, #ambient{transition:opacity .3s ease;}
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="ambient"></div>
+
+  <video id="meetingVideo" playsinline src="meeting-scene.mp4"></video>
+  <div id="dateOverlay">
+    <div class="calendar-box">
+      <div class="calendar-day">Monday</div>
+      <div class="calendar-date">Jul 6</div>
+    </div>
+  </div>
+
+  <div id="textLayer">
+    <p class="stage-line" id="currentLine"></p>
+  </div>
+
+  <div id="wordmarkLayer">
+    <span class="dot"></span><span class="word">LINEOG</span>
+  </div>
+
+  <div id="signatureLayer" onclick="beginExperience()">
+    <span class="sig-word">LINEOG</span>
+    <span class="sig-hint">Tap to begin, with sound</span>
+  </div>
+
+  <div id="waitingDots"><span></span><span></span><span></span></div>
+
+  <div id="finalScene">
+    <button class="become-btn" onclick="showWaitlistCapture()" id="ctaButton">Join the Waitlist</button>
+    <p class="final-sub" id="ctaSub">Be one of LINEOG's first clients.</p>
+    <form id="waitlistForm" onsubmit="return submitWaitlist(event)">
+      <input type="email" id="waitlistEmail" required placeholder="you@example.com">
+      <button type="submit">Join</button>
+    </form>
+    <p id="waitlistMsg"></p>
+  </div>
+</div>
+
+<div id="controls">
+  <button id="restartBtn" onclick="restartSequence()">↺ Start Over</button>
+  <button id="pauseBtn" onclick="togglePause()">❚❚ Pause</button>
+  <button id="skipBtn" onclick="skipScene()">Skip →</button>
+</div>
+<div id="privacyLink"><a href="privacy.html" style="color:inherit; text-decoration:none;">Privacy</a> · <a href="terms.html" style="color:inherit; text-decoration:none;">Terms</a></div>
+
+<script>
+  // ---------- THE SCENE ENGINE ----------
+  // One fixed screen. Text replaces itself, it never stacks. The room
+  // persists as ambient light, not literal illustration, and shifts once,
+  // quietly, at the moment of realization. No scroll involved at all.
+
+  const script = [
+    { scene:2, text: 'The meeting was over.', hold:2200 },
+    { scene:2, text: "Not because the advisor wasn't intelligent.", hold:2600 },
+    { scene:2, text: "Because the client didn't trust him anymore.", accent:true, hold:3000 },
+    { scene:2, text: 'The moment you question your advisor,', hold:2000 },
+    { scene:2, text: "you question every recommendation they've ever made.", hold:3200 },
+
+    { scene:3, page:[
+        "That isn't just an advisor problem. It's an AI problem.",
+        "We've all experienced AI amnesia. AI forgets the day. The time. The details.",
+        "These aren't small things. They're the details that matter.",
+        "Intelligence alone isn't enough."
+      ], accentLast:true, hold:6800 },
+
+    { scene:4, page:[
+        "That's why we built <span class='lineog-word'>LINEOG</span>. A permanent knowledge layer that remembers the details.",
+        "No single AI is best at everything.",
+        "<span class='lineog-word'>LINEOG</span> brings together the world's leading AI models, so you never have to wonder if you asked the right one."
+      ], accentLast:true, hold:7600 },
+
+    { scene:5, page:[
+        "Imagine an advisor that is brilliant... and <span class='emphasis-word'>trustworthy</span>.",
+        "One that never forgets who you are.",
+        "Trust isn't built in a single conversation. <span class='emphasis-word'>It's built over time.</span>",
+        "The next generation isn't just smarter. <span class='emphasis-word'>It's trustworthy.</span>"
+      ], hold:7200 },
+    { scene:5, wordmark:true, big:true, hold:2800 },
+    { scene:5, end:true, hold:0 }
+  ];
+
+  let idx = 0;
+  let paused = false;
+  let pendingTimeout = null;
+  let currentSceneStart = 0;
+
+  const lineEl = document.getElementById('currentLine');
+  const wordmarkEl = document.getElementById('wordmarkLayer');
+  const waitingEl = document.getElementById('waitingDots');
+  const ambientEl = document.getElementById('ambient');
+  const finalEl = document.getElementById('finalScene');
+  const signatureEl = document.getElementById('signatureLayer');
+  const videoEl = document.getElementById('meetingVideo');
+  const dateOverlayEl = document.getElementById('dateOverlay');
+
+  function hideAll(){
+    lineEl.classList.remove('show');
+    wordmarkEl.classList.remove('show', 'big');
+    waitingEl.classList.remove('show');
+    signatureEl.classList.remove('show');
+  }
+
+  function renderStep(step){
+    hideAll();
+    if(step.shift){ ambientEl.classList.add('dimmed'); }
+
+    if(step.end){
+      finalEl.style.display = 'flex';
+      requestAnimationFrame(() => finalEl.classList.add('show'));
+      return;
+    }
+    if(step.signature){
+      signatureEl.classList.add('show');
+      return;
+    }
+    if(step.wordmark){
+      if(step.big) wordmarkEl.classList.add('big');
+      wordmarkEl.classList.add('show');
+      return;
+    }
+    if(step.wait){
+      waitingEl.classList.add('show');
+      return;
+    }
+    if(step.page){
+      lineEl.className = 'stage-page';
+      lineEl.innerHTML = step.page.map((t, i) => {
+        const isLast = i === step.page.length - 1;
+        const accentClass = (step.accentLast && isLast) ? ' accent' : '';
+        return `<p class="page-line${accentClass}">${t}</p>`;
+      }).join('');
+      requestAnimationFrame(() => lineEl.classList.add('show'));
+      return;
+    }
+    lineEl.className = 'stage-line';
+    if(step.dim) lineEl.classList.add('dim');
+    if(step.accent) lineEl.classList.add('accent');
+    lineEl.innerHTML = step.text;
+    requestAnimationFrame(() => lineEl.classList.add('show'));
+  }
+
+  function advance(){
+    if(idx >= script.length) return;
+    const step = script[idx];
+    renderStep(step);
+    if(step.end) return;
+    idx++;
+    if(!paused){
+      pendingTimeout = setTimeout(advance, step.hold);
+    }
+  }
+
+  function togglePause(){
+    if(videoEl.classList.contains('show')){
+      if(videoEl.paused){ videoEl.play(); document.getElementById('pauseBtn').textContent = '❚❚ Pause'; }
+      else { videoEl.pause(); document.getElementById('pauseBtn').textContent = '▶ Play'; }
+      return;
+    }
+    paused = !paused;
+    document.getElementById('pauseBtn').textContent = paused ? '▶ Play' : '❚❚ Pause';
+    if(paused){
+      clearTimeout(pendingTimeout);
+    } else {
+      pendingTimeout = setTimeout(advance, 600);
+    }
+  }
+
+  function skipScene(){
+    if(videoEl.classList.contains('show')){
+      videoEl.currentTime = videoEl.duration;
+      return;
+    }
+    if(idx >= script.length) return;
+    clearTimeout(pendingTimeout);
+    const startingScene = script[Math.max(0, idx - 1)].scene;
+    while(idx < script.length && script[idx].scene === startingScene){
+      idx++;
+    }
+    if(idx >= script.length) idx = script.length - 1;
+    paused = false;
+    document.getElementById('pauseBtn').textContent = '❚❚ Pause';
+    advance();
+  }
+
+  function restartSequence(){
+    clearTimeout(pendingTimeout);
+    idx = 0;
+    paused = false;
+    document.getElementById('pauseBtn').textContent = '❚❚ Pause';
+    document.getElementById('skipBtn').style.display = 'inline';
+    ambientEl.classList.remove('dimmed');
+    finalEl.classList.remove('show');
+    finalEl.style.display = 'none';
+    document.getElementById('ctaButton').style.display = 'inline-block';
+    document.getElementById('ctaSub').style.display = 'block';
+    document.getElementById('waitlistForm').style.display = 'none';
+    document.getElementById('waitlistMsg').textContent = '';
+    hideAll();
+    videoEl.pause();
+    videoEl.currentTime = 0;
+    videoEl.classList.remove('show');
+    dateOverlayEl.classList.remove('show');
+    signatureEl.classList.remove('hidden');
+    signatureEl.classList.add('show');
+  }
+
+  function showWaitlistCapture(){
+    document.getElementById('ctaButton').style.display = 'none';
+    document.getElementById('ctaSub').style.display = 'none';
+    document.getElementById('waitlistForm').style.display = 'flex';
+    document.getElementById('waitlistEmail').focus();
+  }
+
+  async function submitWaitlist(e){
+    e.preventDefault();
+    const email = document.getElementById('waitlistEmail').value.trim();
+    const msg = document.getElementById('waitlistMsg');
+    try{
+      const response = await fetch('/api/interest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, task: 'Interested via the LINEOG Experience', recommended: null })
+      });
+      const result = await response.json();
+      if(!response.ok || result.error){
+        msg.style.color = 'var(--coral-soft)';
+        msg.textContent = result.error || 'Something went wrong, try again.';
+        return false;
+      }
+      msg.style.color = 'var(--coral-soft)';
+      msg.textContent = "You're on the list.";
+      document.getElementById('waitlistForm').reset();
+    } catch(err){
+      console.error(err);
+      msg.style.color = 'var(--coral-soft)';
+      msg.textContent = 'Something went wrong, try again.';
+    }
+    return false;
+  }
+
+  function beginExperience(){
+    signatureEl.classList.add('hidden');
+    videoEl.classList.add('show');
+    videoEl.muted = false;
+    videoEl.play().catch(err => console.error('Playback needs a user gesture:', err));
+  }
+
+  videoEl.addEventListener('timeupdate', () => {
+    if(videoEl.duration && videoEl.currentTime >= videoEl.duration - 3.2){
+      dateOverlayEl.classList.add('show');
+    }
+  });
+
+  videoEl.addEventListener('ended', () => {
+    videoEl.classList.remove('show');
+    dateOverlayEl.classList.remove('show');
+    document.getElementById('skipBtn').style.display = 'none';
+    idx = 0; // the video has already played the meeting scene, real sequence starts here
+    advance();
+  });
+
+  signatureEl.classList.add('show');
+</script>
+</body>
+</html>
