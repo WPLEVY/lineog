@@ -112,6 +112,23 @@
   }
   #waitlistMsg{font-size:12px; color:var(--coral-soft); margin-top:10px; min-height:16px;}
 
+  #scrubberWrap{
+    position:fixed; bottom:54px; left:0; right:0; z-index:5; display:flex; justify-content:center;
+    opacity:0.35; transition:opacity .3s ease; padding:0 30px;
+  }
+  #scrubberWrap:hover{opacity:0.9;}
+  #scrubber{
+    -webkit-appearance:none; appearance:none; width:100%; max-width:420px; height:2px;
+    background:rgba(255,255,255,0.2); border-radius:2px; outline:none; cursor:pointer;
+  }
+  #scrubber::-webkit-slider-thumb{
+    -webkit-appearance:none; width:11px; height:11px; border-radius:50%;
+    background:var(--coral-soft); cursor:pointer; margin-top:-4.5px;
+  }
+  #scrubber::-moz-range-thumb{
+    width:11px; height:11px; border-radius:50%; background:var(--coral-soft); border:none; cursor:pointer;
+  }
+  #scrubber::-webkit-slider-runnable-track{height:2px; background:transparent;}
   #controls{
     position:fixed; bottom:22px; left:0; right:0; z-index:5; display:flex; gap:18px; justify-content:center;
     opacity:0.35; transition:opacity .3s ease;
@@ -167,6 +184,9 @@
   </div>
 </div>
 
+<div id="scrubberWrap">
+  <input type="range" id="scrubber" min="0" max="1000" value="0">
+</div>
 <div id="controls">
   <button id="restartBtn" onclick="restartSequence()">↺ Start Over</button>
   <button id="pauseBtn" onclick="togglePause()">❚❚ Pause</button>
@@ -218,6 +238,85 @@
     { scene:5, end:true, hold:0 }
   ];
 
+  // ---------- SCRUBBER: one continuous timeline spanning video + text ----------
+  const VIDEO_DURATION = 36.08;
+  let timelineSteps = [];
+  let totalDuration = VIDEO_DURATION;
+  (function buildTimeline(){
+    let cum = VIDEO_DURATION;
+    script.forEach((step) => {
+      timelineSteps.push({ start: cum, end: cum + (step.hold || 0) });
+      cum += (step.hold || 0);
+    });
+    totalDuration = cum || VIDEO_DURATION;
+  })();
+
+  let isDraggingScrubber = false;
+  let stepStartedAt = 0; // Date.now() when the current text step began
+
+  function currentVirtualTime(){
+    if(videoEl.classList.contains('show')){
+      return videoEl.currentTime;
+    }
+    if(idx > 0 && idx <= timelineSteps.length){
+      const elapsedInStep = (Date.now() - stepStartedAt) / 1000;
+      return Math.min(timelineSteps[idx - 1].start + elapsedInStep, timelineSteps[idx - 1].end);
+    }
+    return 0;
+  }
+
+  setInterval(() => {
+    if(isDraggingScrubber) return;
+    const t = currentVirtualTime();
+    document.getElementById('scrubber').value = Math.min(1000, (t / totalDuration) * 1000);
+  }, 200);
+
+  function seekToVirtualTime(t){
+    clearTimeout(pendingTimeout);
+    t = Math.max(0, Math.min(t, totalDuration - 0.1));
+
+    if(t < VIDEO_DURATION){
+      hideAll();
+      finalEl.classList.remove('show');
+      finalEl.style.display = 'none';
+      signatureEl.classList.add('hidden');
+      videoEl.classList.add('show');
+      document.getElementById('skipBtn').style.display = 'inline';
+      videoEl.currentTime = t;
+      videoEl.play().catch(() => {});
+      return;
+    }
+
+    videoEl.pause();
+    videoEl.classList.remove('show');
+    document.getElementById('skipBtn').style.display = 'none';
+
+    let targetIdx = timelineSteps.length - 1;
+    for(let i = 0; i < timelineSteps.length; i++){
+      if(t < timelineSteps[i].end){ targetIdx = i; break; }
+    }
+    idx = targetIdx;
+    hideAll();
+    const step = script[idx];
+    stepStartedAt = Date.now();
+    renderStep(step);
+    const remaining = Math.max(300, timelineSteps[idx].end - t) * 1000;
+    idx++;
+    paused = false;
+    if(!step.end){
+      pendingTimeout = setTimeout(advance, remaining);
+    }
+  }
+
+  const scrubberEl = document.getElementById('scrubber');
+  scrubberEl.addEventListener('mousedown', () => isDraggingScrubber = true);
+  scrubberEl.addEventListener('touchstart', () => isDraggingScrubber = true);
+  scrubberEl.addEventListener('change', () => {
+    const targetTime = (scrubberEl.value / 1000) * totalDuration;
+    seekToVirtualTime(targetTime);
+    isDraggingScrubber = false;
+  });
+
   let idx = 0;
   let paused = false;
   let pendingTimeout = null;
@@ -265,7 +364,7 @@
       lineEl.innerHTML = step.page.map((t, i) => {
         const isLast = i === step.page.length - 1;
         const accentClass = (step.accentLast && isLast) ? ' accent' : '';
-        const delay = (i * 0.4).toFixed(2);
+        const delay = (i * 3.2).toFixed(2);
         return `<p class="page-line${accentClass}" style="transition-delay:${delay}s">${t}</p>`;
       }).join('');
       requestAnimationFrame(() => lineEl.classList.add('show'));
@@ -283,6 +382,7 @@
     hideAll();
     pendingTimeout = setTimeout(() => {
       const step = script[idx];
+      stepStartedAt = Date.now();
       renderStep(step);
       if(step.end) return;
       idx++;
