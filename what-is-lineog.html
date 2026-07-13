@@ -65,13 +65,15 @@
   }
   #meetingVideo.show{opacity:1;}
 
-  .stage-page{opacity:0; transition:opacity 1s ease;}
-  .stage-page.show{opacity:1;}
+  .stage-page{opacity:1;}
   .page-line{
     font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(17px,2.8vw,23px);
-    line-height:1.65; color:var(--lav); margin-bottom:16px;
+    line-height:1.7; color:var(--lav); margin-bottom:22px; letter-spacing:0.01em;
+    opacity:0; transform:translateY(14px) scale(0.98);
+    transition:opacity .9s cubic-bezier(.19,1,.22,1), transform .9s cubic-bezier(.19,1,.22,1);
   }
-  .page-line:first-child{font-size:clamp(19px,3.2vw,26px);}
+  .stage-page.show .page-line{opacity:1; transform:translateY(0) scale(1);}
+  .page-line:first-child{font-size:clamp(20px,3.4vw,28px); font-weight:700;}
   .page-line.accent{color:var(--coral-soft);}
   .lineog-word{color:var(--coral-soft);}
   .emphasis-word{color:var(--coral-soft);}
@@ -186,23 +188,29 @@
 
     { scene:3, page:[
         "That isn't just an advisor problem. It's an AI problem.",
-        "We've all experienced AI amnesia. AI forgets the day. The time. The details.",
+        "We've all experienced AI amnesia. AI forgets the day. The time. The details."
+      ], hold:5200 },
+    { scene:3, page:[
         "These aren't small things. They're the details that matter.",
         "Intelligence alone isn't enough."
-      ], accentLast:true, hold:6800 },
+      ], accentLast:true, hold:5200 },
 
     { scene:4, page:[
         "That's why we built <span class='lineog-word'>LINEOG</span>. A permanent knowledge layer that remembers the details.",
-        "No single AI is best at everything.",
+        "No single AI is best at everything."
+      ], hold:5400 },
+    { scene:4, page:[
         "<span class='lineog-word'>LINEOG</span> brings together the world's leading AI models, so you never have to wonder if you asked the right one."
-      ], accentLast:true, hold:7600 },
+      ], accentLast:true, hold:4800 },
 
     { scene:5, page:[
         "Imagine an advisor that is brilliant... and <span class='emphasis-word'>trustworthy</span>.",
-        "One that never forgets who you are.",
+        "One that never forgets who you are."
+      ], hold:5000 },
+    { scene:5, page:[
         "Trust isn't built in a single conversation. <span class='emphasis-word'>It's built over time.</span>",
         "The next generation isn't just smarter. <span class='emphasis-word'>It's trustworthy.</span>"
-      ], hold:7200 },
+      ], hold:5400 },
     { scene:5, wordmark:true, big:true, hold:2800 },
     { scene:5, end:true, hold:0 }
   ];
@@ -254,7 +262,8 @@
       lineEl.innerHTML = step.page.map((t, i) => {
         const isLast = i === step.page.length - 1;
         const accentClass = (step.accentLast && isLast) ? ' accent' : '';
-        return `<p class="page-line${accentClass}">${t}</p>`;
+        const delay = (i * 0.4).toFixed(2);
+        return `<p class="page-line${accentClass}" style="transition-delay:${delay}s">${t}</p>`;
       }).join('');
       requestAnimationFrame(() => lineEl.classList.add('show'));
       return;
@@ -375,7 +384,7 @@
     videoEl.classList.remove('show');
     document.getElementById('skipBtn').style.display = 'none';
     idx = 0; // the video has already played the meeting scene, real sequence starts here
-    advance();
+    setTimeout(advance, 1400);
   });
 
   signatureEl.classList.add('show');
