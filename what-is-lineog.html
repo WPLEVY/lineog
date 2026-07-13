@@ -277,13 +277,16 @@
 
   function advance(){
     if(idx >= script.length) return;
-    const step = script[idx];
-    renderStep(step);
-    if(step.end) return;
-    idx++;
-    if(!paused){
-      pendingTimeout = setTimeout(advance, step.hold);
-    }
+    hideAll();
+    pendingTimeout = setTimeout(() => {
+      const step = script[idx];
+      renderStep(step);
+      if(step.end) return;
+      idx++;
+      if(!paused){
+        pendingTimeout = setTimeout(advance, step.hold);
+      }
+    }, 550);
   }
 
   function togglePause(){
@@ -384,7 +387,7 @@
     videoEl.classList.remove('show');
     document.getElementById('skipBtn').style.display = 'none';
     idx = 0; // the video has already played the meeting scene, real sequence starts here
-    setTimeout(advance, 1400);
+    setTimeout(advance, 1000);
   });
 
   signatureEl.classList.add('show');
