@@ -46,10 +46,8 @@
     position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center; gap:9px; opacity:0; transition:opacity 1.2s ease;
   }
   #wordmarkLayer.show{opacity:1;}
-  #wordmarkLayer .dot{width:8px; height:8px; border-radius:50%; background:var(--coral);}
   #wordmarkLayer span.word{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:var(--coral-soft); transition:font-size .6s ease;}
   #wordmarkLayer.big span.word{font-size:40px; letter-spacing:0.01em;}
-  #wordmarkLayer.big .dot{width:11px; height:11px;}
 
   #signatureLayer{
     position:absolute; inset:0; z-index:6; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -103,7 +101,6 @@
     opacity:0; transition:opacity .6s ease;
   }
   #finalScene.show .final-wordmark{opacity:1;}
-  .final-wordmark .dot{width:8px; height:8px; border-radius:50%; background:var(--coral);}
   .final-wordmark .word{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:40px; color:var(--coral-soft);}
   .final-tagline{
     font-family:'Inter',sans-serif; font-size:15px; color:var(--slate-light); margin-top:16px;
@@ -121,16 +118,6 @@
   }
   .become-btn:hover{transform:translateY(-2px); box-shadow:0 12px 30px -8px rgba(255,107,74,0.5);}
   .final-sub{font-size:13px; color:var(--slate-light); margin-top:14px;}
-  #waitlistForm{display:none; gap:8px; justify-content:center; flex-wrap:wrap; max-width:360px; margin:20px auto 0;}
-  #waitlistForm input{
-    font-size:13.5px; padding:10px 14px; border-radius:100px; border:1px solid rgba(255,255,255,0.14);
-    background:rgba(255,255,255,0.05); color:var(--lav);
-  }
-  #waitlistForm button{
-    font-family:'Inter',sans-serif; font-weight:600; font-size:13px; color:#fff; background:var(--coral);
-    border:none; padding:10px 20px; border-radius:100px; cursor:pointer;
-  }
-  #waitlistMsg{font-size:12px; color:var(--coral-soft); margin-top:10px; min-height:16px;}
 
   #scrubberWrap{
     position:fixed; bottom:54px; left:0; right:0; z-index:5; display:flex; justify-content:center;
@@ -183,7 +170,7 @@
   </div>
 
   <div id="wordmarkLayer">
-    <span class="dot"></span><span class="word">LINEOG</span>
+    <span class="word">LINEOG</span>
   </div>
 
   <div id="signatureLayer" onclick="beginExperience()">
@@ -195,17 +182,12 @@
 
   <div id="finalScene">
     <div class="final-wordmark">
-      <span class="dot"></span><span class="word">LINEOG</span>
+      <span class="word">LINEOG</span>
     </div>
-    <p class="final-tagline">An advisor you can trust.</p>
+    <p class="final-tagline">An advisor you can trust:</p>
     <div class="final-cta-group">
-      <button class="become-btn" onclick="showWaitlistCapture()" id="ctaButton">Join the Waitlist</button>
-      <p class="final-sub" id="ctaSub">Be one of LINEOG's first clients.</p>
-      <form id="waitlistForm" onsubmit="return submitWaitlist(event)">
-        <input type="email" id="waitlistEmail" required placeholder="you@example.com">
-        <button type="submit">Join</button>
-      </form>
-      <p id="waitlistMsg"></p>
+      <a class="become-btn" href="what-lineog-gives-you.html" id="ctaButton">Find Out More</a>
+      <p class="final-sub" id="ctaSub">See everything you get.</p>
     </div>
   </div>
 </div>
@@ -457,50 +439,12 @@
     ambientEl.classList.remove('dimmed');
     finalEl.classList.remove('show');
     finalEl.style.display = 'none';
-    document.getElementById('ctaButton').style.display = 'inline-block';
-    document.getElementById('ctaSub').style.display = 'block';
-    document.getElementById('waitlistForm').style.display = 'none';
-    document.getElementById('waitlistMsg').textContent = '';
     hideAll();
     videoEl.pause();
     videoEl.currentTime = 0;
     videoEl.classList.remove('show');
     signatureEl.classList.remove('hidden');
     signatureEl.classList.add('show');
-  }
-
-  function showWaitlistCapture(){
-    document.getElementById('ctaButton').style.display = 'none';
-    document.getElementById('ctaSub').style.display = 'none';
-    document.getElementById('waitlistForm').style.display = 'flex';
-    document.getElementById('waitlistEmail').focus();
-  }
-
-  async function submitWaitlist(e){
-    e.preventDefault();
-    const email = document.getElementById('waitlistEmail').value.trim();
-    const msg = document.getElementById('waitlistMsg');
-    try{
-      const response = await fetch('/api/interest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, task: 'Interested via the LINEOG Experience', recommended: null })
-      });
-      const result = await response.json();
-      if(!response.ok || result.error){
-        msg.style.color = 'var(--coral-soft)';
-        msg.textContent = result.error || 'Something went wrong, try again.';
-        return false;
-      }
-      msg.style.color = 'var(--coral-soft)';
-      msg.textContent = "You're on the list.";
-      document.getElementById('waitlistForm').reset();
-    } catch(err){
-      console.error(err);
-      msg.style.color = 'var(--coral-soft)';
-      msg.textContent = 'Something went wrong, try again.';
-    }
-    return false;
   }
 
   function beginExperience(){
