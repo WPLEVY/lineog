@@ -31,7 +31,7 @@
 
   #textLayer{
     position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center;
-    max-width:640px; margin:0 auto; padding:0 28px; text-align:center;
+    max-width:900px; margin:0 auto; padding:0 28px; text-align:center;
   }
   .stage-line{
     font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(19px,3.4vw,28px);
@@ -351,6 +351,7 @@
   const videoEl = document.getElementById('meetingVideo');
 
   function hideAll(){
+    document.querySelectorAll('.page-line').forEach(el => { el.style.transitionDelay = '0s'; });
     lineEl.classList.remove('show');
     wordmarkEl.classList.remove('show', 'big');
     waitingEl.classList.remove('show');
