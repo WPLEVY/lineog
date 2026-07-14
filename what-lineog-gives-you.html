@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINEOG — Your Advisor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plum:#1A1035; --plum-soft:#261A47; --lav:#FAF8FF; --coral:#FF6B4A; --coral-soft:#FF8A6E; --slate-light:#A8A3C7;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html, body{
+    background:#000; color:var(--lav); font-family:'Inter',sans-serif; min-height:100%;
+  }
+  ::selection{background:var(--coral); color:#000;}
+  body{
+    background:radial-gradient(ellipse at 50% 0%, #241E44 0%, #0A0716 55%, #000 100%);
+  }
+
+  .wrap{max-width:640px; margin:0 auto; padding:100px 28px 130px;}
+
+  .hero{text-align:center; margin-bottom:110px;}
+  .hero .mark{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:20px; color:var(--coral-soft); letter-spacing:0.02em; margin-bottom:14px;}
+  .hero h1{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(32px,5.5vw,50px); line-height:1.2;}
+
+  section{margin-bottom:100px;}
+  section:last-of-type{margin-bottom:0;}
+
+  .lead{
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(22px,3.4vw,28px);
+    line-height:1.5; text-align:center; margin-bottom:20px;
+  }
+  .lead .accent{color:var(--coral-soft);}
+
+  p.body-text{
+    font-size:16px; line-height:1.75; color:var(--slate-light); text-align:center; max-width:520px; margin:0 auto;
+  }
+
+  .escalate{
+    display:flex; flex-direction:column; align-items:center; gap:4px; margin:34px 0; font-family:'Space Grotesk',sans-serif;
+  }
+  .escalate span{font-size:15px; color:var(--slate-light); opacity:0.55;}
+  .escalate span:nth-child(1){opacity:0.4; font-size:14px;}
+  .escalate span:nth-child(4){opacity:1; font-size:18px; font-weight:600; color:var(--coral-soft);}
+
+  .expertise-row{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:32px 0;
+  }
+  .expertise-row span{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--lav); background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.1); padding:8px 16px; border-radius:100px;
+  }
+
+  .quote-block{
+    border-left:2px solid var(--coral); padding-left:22px; margin:34px auto; max-width:460px;
+  }
+  .quote-block p{
+    font-family:'Space Grotesk',sans-serif; font-style:italic; font-size:16px; color:var(--lav);
+    margin-bottom:12px; line-height:1.5;
+  }
+  .quote-block p:last-child{margin-bottom:0;}
+
+  .divider{
+    width:36px; height:2px; background:var(--coral); margin:0 auto 90px;
+  }
+
+  .close-lead{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(24px,4vw,34px);
+    text-align:center; line-height:1.4; margin-bottom:26px;
+  }
+
+  .cta-block{text-align:center; margin-top:120px;}
+  .cta-block .kicker{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--slate-light); margin-bottom:14px;}
+  .cta-block h2{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(26px,4vw,36px); margin-bottom:14px;}
+  .cta-block .sub{color:var(--slate-light); font-size:15px; max-width:440px; margin:0 auto 36px; line-height:1.6;}
+
+  .become-btn{
+    display:inline-block; font-family:'Inter',sans-serif; font-weight:600; font-size:16px; color:#fff;
+    background:var(--coral); border:none; padding:16px 34px; border-radius:100px; cursor:pointer;
+    text-decoration:none; transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .become-btn:hover{transform:translateY(-2px); box-shadow:0 12px 30px -8px rgba(255,107,74,0.5);}
+
+  #waitlistForm{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; max-width:380px; margin:26px auto 0;}
+  #waitlistForm input{
+    font-size:14px; padding:13px 16px; border-radius:100px; border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.05); color:var(--lav); flex:1; min-width:220px;
+  }
+  #waitlistForm input::placeholder{color:var(--slate-light);}
+  #waitlistForm button{
+    font-family:'Inter',sans-serif; font-weight:600; font-size:14px; color:#fff; background:var(--coral);
+    border:none; padding:13px 26px; border-radius:100px; cursor:pointer;
+  }
+  #waitlistMsg{font-size:13px; color:var(--coral-soft); margin-top:16px; min-height:16px;}
+
+  .closing-mark{text-align:center; margin-top:130px;}
+  .closing-mark .word{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; color:var(--coral-soft); display:block; margin-bottom:10px;}
+  .closing-mark .tag{color:var(--slate-light); font-size:14px;}
+
+  .backlink{
+    display:block; text-align:center; margin-top:70px; font-family:'IBM Plex Mono',monospace; font-size:12px;
+    color:var(--slate-light); text-decoration:none;
+  }
+  .backlink:hover{color:var(--coral-soft);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="mark">LINEOG</div>
+    <h1>Your advisor.</h1>
+  </div>
+
+  <section>
+    <p class="lead">The world's leading AI models are incredibly intelligent.<br>But intelligence alone isn't enough.</p>
+    <p class="body-text">The most important decisions in life don't happen in one conversation. They unfold over</p>
+    <div class="escalate">
+      <span>days</span>
+      <span>weeks</span>
+      <span>months</span>
+      <span>years</span>
+    </div>
+    <p class="body-text">Today's AI can lose track of what changed. It can blend together old and new information. It can lose sight of the details that matter most.</p>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <p class="lead">LINEOG was built differently.<br><span class="accent">Not as another AI. As your advisor.</span></p>
+  </section>
+
+  <section>
+    <p class="lead">One advisor. The world's best specialists.</p>
+    <p class="body-text">No advisor knows everything. The best advisors know when to bring in specialists. That's why LINEOG is built on the world's leading AI models.</p>
+    <div class="expertise-row">
+      <span>Writing</span><span>Reasoning</span><span>Research</span><span>Coding</span><span>Analysis</span>
+    </div>
+    <p class="body-text">Every recommendation draws on the right expertise for the problem in front of you. You never choose between models. You never wonder which AI is best. Your advisor does.</p>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <p class="lead">One relationship. The best expertise available.<br><span class="accent">Your advisor never loses the thread.</span></p>
+    <p class="body-text">Today's AI is built around conversations. LINEOG is built around relationships. Your advisor remembers your goals, your decisions, your files, your corrections, your priorities.</p>
+    <p class="body-text" style="margin-top:20px;">Because great advice isn't about remembering one conversation. It's about understanding everything that came before it.</p>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <p class="lead">Your advisor understands time.</p>
+    <p class="body-text">Advice depends on chronology. A recommendation isn't just based on what happened. It's based on when it happened.</p>
+    <p class="body-text" style="margin-top:20px;">LINEOG organizes everything you share into a living advisory file where every conversation, document, decision, and correction is anchored in time.</p>
+    <div class="quote-block">
+      <p>"Did we already decide that?"</p>
+      <p>"Was that before or after we changed our plan?"</p>
+      <p>"Is this recommendation based on today's information or last week's?"</p>
+    </div>
+    <p class="body-text">Your advisor knows.</p>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <p class="lead">Your advisor asks before it assumes.</p>
+    <p class="body-text">The fastest answer isn't always the best answer. When something important is missing, great advisors don't guess. They ask. Because understanding always comes before advice.</p>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <p class="lead">Every conversation makes your advisor better.</p>
+    <p class="body-text">Most AI conversations end. Your advisory relationship doesn't. Every meeting, every decision, every file, every correction, everything contributes to a better advisor tomorrow than you had yesterday.</p>
+  </section>
+
+  <section>
+    <p class="close-lead">Not another chat.<br><span style="color:var(--coral-soft)">A relationship.</span></p>
+    <p class="body-text">This is a different relationship with AI. You don't need another chatbot. You don't need another AI model. You don't need another AI aggregator.</p>
+    <p class="body-text" style="margin-top:20px;">You need one advisor that understands you, remembers what matters, knows when to ask questions, and quietly brings together the world's best AI expertise whenever you need it.</p>
+    <p class="body-text" style="margin-top:20px; font-weight:600; color:var(--lav);">That's LINEOG.</p>
+  </section>
+
+  <div class="cta-block">
+    <div class="kicker">Join the Waitlist</div>
+    <h2>Be one of LINEOG's first clients.</h2>
+    <p class="sub">An advisor designed not just to answer questions, but to help guide the decisions that shape your life. We'll let you know the moment your invitation is ready.</p>
+    <form id="waitlistForm" onsubmit="return submitWaitlist(event)">
+      <input type="email" id="waitlistEmail" required placeholder="you@example.com">
+      <button type="submit">Join</button>
+    </form>
+    <p id="waitlistMsg"></p>
+  </div>
+
+  <div class="closing-mark">
+    <span class="word">LINEOG</span>
+    <span class="tag">An advisor you can trust.</span>
+  </div>
+
+  <a class="backlink" href="what-is-lineog.html">← Back</a>
+
+</div>
+
+<script>
+async function submitWaitlist(e){
+  e.preventDefault();
+  const email = document.getElementById('waitlistEmail').value.trim();
+  const msg = document.getElementById('waitlistMsg');
+  try{
+    const response = await fetch('/api/interest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, task: 'Founding Client interest via LINEOG sales page', recommended: null })
+    });
+    const result = await response.json();
+    if(!response.ok || result.error){
+      msg.style.color = 'var(--coral-soft)';
+      msg.textContent = result.error || 'Something went wrong, try again.';
+      return false;
+    }
+    msg.style.color = 'var(--coral-soft)';
+    msg.textContent = "You're on the list.";
+    document.getElementById('waitlistForm').reset();
+  } catch(err){
+    console.error(err);
+    msg.style.color = 'var(--coral-soft)';
+    msg.textContent = 'Something went wrong, try again.';
+  }
+  return false;
+}
+</script>
+</body>
+</html>
