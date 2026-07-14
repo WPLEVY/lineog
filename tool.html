@@ -31,6 +31,12 @@
   }
   .wrap{width:100%; max-width:620px;}
 
+  .home-link{
+    position:fixed; top:26px; left:28px; font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+    color:var(--slate-light); text-decoration:none; opacity:0.7; transition:opacity .3s ease;
+    letter-spacing:0.02em;
+  }
+  .home-link:hover{opacity:1; color:var(--coral-soft);}
   header{display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:56px;}
   .mark{width:8px; height:8px; border-radius:50%; background:var(--coral);}
   .brand{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:var(--slate-light); letter-spacing:0.02em;}
@@ -182,6 +188,7 @@
 </head>
 <body>
 <div class="wrap">
+  <a href="index.html" class="home-link">← Home</a>
   <header>
     <span class="mark"></span>
     <span class="brand">a free tool from <b>LINEOG</b></span>
