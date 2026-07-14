@@ -124,6 +124,11 @@
     opacity:0.35; transition:opacity .3s ease; padding:0 30px;
   }
   #scrubberWrap:hover{opacity:0.9;}
+  .scrubber-inner{position:relative; width:100%; max-width:420px;}
+  #scrubberMarker{
+    position:absolute; top:-2px; width:2px; height:6px; background:var(--coral-soft);
+    pointer-events:none; left:0%;
+  }
   #scrubber{
     -webkit-appearance:none; appearance:none; width:100%; max-width:420px; height:2px;
     background:rgba(255,255,255,0.2); border-radius:2px; outline:none; cursor:pointer;
@@ -192,7 +197,10 @@
 </div>
 
 <div id="scrubberWrap">
-  <input type="range" id="scrubber" min="0" max="1000" value="0">
+  <div class="scrubber-inner">
+    <input type="range" id="scrubber" min="0" max="1000" value="0">
+    <div id="scrubberMarker"></div>
+  </div>
 </div>
 <div id="controls">
   <button id="restartBtn" onclick="restartSequence()">↺ Start Over</button>
@@ -240,28 +248,48 @@
   ];
 
   // ---------- SCRUBBER: one continuous timeline spanning video + text ----------
-  const VIDEO_DURATION = 36.08;
+  let VIDEO_DURATION = 37.5; // fallback until real metadata loads
+  videoEl.addEventListener('loadedmetadata', () => {
+    if(videoEl.duration && isFinite(videoEl.duration)){
+      VIDEO_DURATION = videoEl.duration;
+      buildTimeline();
+      positionMarker();
+    }
+  });
+
+  function positionMarker(){
+    const pct = (VIDEO_DURATION / totalDuration) * 100;
+    document.getElementById('scrubberMarker').style.left = pct + '%';
+  }
+
   let timelineSteps = [];
   let totalDuration = VIDEO_DURATION;
-  (function buildTimeline(){
+  function buildTimeline(){
+    timelineSteps = [];
     let cum = VIDEO_DURATION;
     script.forEach((step) => {
-      timelineSteps.push({ start: cum, end: cum + (step.hold || 0) });
+      const pauseBefore = step === script[0] ? 0 : (script[script.indexOf(step) - 1].pauseAfter || 700);
+      cum += pauseBefore;
+      timelineSteps.push({ segmentStart: cum, holdEnd: cum + (step.hold || 0) });
       cum += (step.hold || 0);
     });
     totalDuration = cum || VIDEO_DURATION;
-  })();
+  }
+  buildTimeline();
+  positionMarker();
 
   let isDraggingScrubber = false;
-  let stepStartedAt = 0; // Date.now() when the current text step began
+  let stepStartedAt = 0;       // Date.now() when this step's content actually appeared
+  let segmentEnteredAt = 0;    // Date.now() when we started waiting to enter this step (pause included)
 
   function currentVirtualTime(){
     if(videoEl.classList.contains('show')){
       return videoEl.currentTime;
     }
     if(idx > 0 && idx <= timelineSteps.length){
-      const elapsedInStep = (Date.now() - stepStartedAt) / 1000;
-      return Math.min(timelineSteps[idx - 1].start + elapsedInStep, timelineSteps[idx - 1].end);
+      const seg = timelineSteps[idx - 1];
+      const elapsedSinceSegmentStart = (Date.now() - segmentEnteredAt) / 1000;
+      return Math.min(seg.segmentStart + elapsedSinceSegmentStart, seg.holdEnd);
     }
     return 0;
   }
@@ -283,6 +311,7 @@
       signatureEl.classList.add('hidden');
       videoEl.classList.add('show');
       document.getElementById('skipBtn').style.display = 'inline';
+      document.getElementById('skipBtn').textContent = 'Skip →';
       videoEl.currentTime = t;
       videoEl.play().catch(() => {});
       return;
@@ -290,18 +319,19 @@
 
     videoEl.pause();
     videoEl.classList.remove('show');
-    document.getElementById('skipBtn').style.display = 'none';
+    document.getElementById('skipBtn').textContent = 'Skip to End →';
 
     let targetIdx = timelineSteps.length - 1;
     for(let i = 0; i < timelineSteps.length; i++){
-      if(t < timelineSteps[i].end){ targetIdx = i; break; }
+      if(t < timelineSteps[i].holdEnd){ targetIdx = i; break; }
     }
     idx = targetIdx;
     hideAll();
     const step = script[idx];
+    segmentEnteredAt = Date.now() - Math.max(0, t - timelineSteps[idx].segmentStart) * 1000;
     stepStartedAt = Date.now();
     renderStep(step);
-    const remaining = Math.max(300, timelineSteps[idx].end - t) * 1000;
+    const remaining = Math.max(300, timelineSteps[idx].holdEnd - t) * 1000;
     idx++;
     paused = false;
     if(!step.end){
@@ -384,6 +414,7 @@
     if(idx >= script.length) return;
     const prevStep = idx > 0 ? script[idx - 1] : null;
     const pauseDuration = (prevStep && prevStep.pauseAfter !== undefined) ? prevStep.pauseAfter : 700;
+    segmentEnteredAt = Date.now();
     hideAll();
     pendingTimeout = setTimeout(() => {
       const step = script[idx];
@@ -417,16 +448,14 @@
       videoEl.currentTime = videoEl.duration;
       return;
     }
-    if(idx >= script.length) return;
     clearTimeout(pendingTimeout);
-    const startingScene = script[Math.max(0, idx - 1)].scene;
-    while(idx < script.length && script[idx].scene === startingScene){
-      idx++;
-    }
-    if(idx >= script.length) idx = script.length - 1;
-    paused = false;
-    document.getElementById('pauseBtn').textContent = '❚❚ Pause';
-    advance();
+    videoEl.pause();
+    document.getElementById('skipBtn').style.display = 'none';
+    hideAll();
+    idx = script.length - 1;
+    const finalStep = script[idx];
+    stepStartedAt = Date.now();
+    renderStep(finalStep);
   }
 
   function restartSequence(){
@@ -435,6 +464,7 @@
     paused = false;
     document.getElementById('pauseBtn').textContent = '❚❚ Pause';
     document.getElementById('skipBtn').style.display = 'inline';
+    document.getElementById('skipBtn').textContent = 'Skip →';
     ambientEl.classList.remove('dimmed');
     finalEl.classList.remove('show');
     finalEl.style.display = 'none';
@@ -455,7 +485,7 @@
 
   videoEl.addEventListener('ended', () => {
     videoEl.classList.remove('show');
-    document.getElementById('skipBtn').style.display = 'none';
+    document.getElementById('skipBtn').textContent = 'Skip to End →';
     idx = 0; // the video has already played the meeting scene, real sequence starts here
     setTimeout(advance, 1500);
   });
