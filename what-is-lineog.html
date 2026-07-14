@@ -61,10 +61,14 @@
   #signatureLayer.hidden{display:none;}
 
   #meetingVideo{
-    position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:cover;
-    opacity:0; transition:opacity 1s ease;
+    position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:cover; object-position:center;
+    opacity:0; transition:opacity 1s ease; background:#000;
   }
   #meetingVideo.show{opacity:1;}
+
+  @media (max-aspect-ratio: 4/5){
+    #meetingVideo{ object-fit:contain; }
+  }
 
   .stage-page{opacity:1;}
   .page-line{
