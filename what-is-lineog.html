@@ -127,7 +127,7 @@
   .scrubber-inner{position:relative; width:100%; max-width:420px;}
   #scrubberMarker{
     position:absolute; top:-2px; width:2px; height:6px; background:var(--coral-soft);
-    pointer-events:none; left:0%;
+    pointer-events:none; left:0%; transform:translateX(-50%);
   }
   #scrubber{
     -webkit-appearance:none; appearance:none; width:100%; max-width:420px; height:2px;
@@ -203,6 +203,7 @@
   </div>
 </div>
 <div id="controls">
+  <a href="index.html" style="color:inherit; text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em;">Home</a>
   <button id="restartBtn" onclick="restartSequence()">↺ Start Over</button>
   <button id="pauseBtn" onclick="togglePause()">❚❚ Pause</button>
   <button id="skipBtn" onclick="skipScene()">Skip →</button>
@@ -251,8 +252,9 @@
   let VIDEO_DURATION = 37.5; // fallback until real metadata loads
 
   function positionMarker(){
-    const pct = (VIDEO_DURATION / totalDuration) * 100;
-    document.getElementById('scrubberMarker').style.left = pct + '%';
+    const pct = (VIDEO_DURATION / totalDuration);
+    const thumbWidth = 11;
+    document.getElementById('scrubberMarker').style.left = `calc(${thumbWidth/2}px + ${pct} * (100% - ${thumbWidth}px))`;
   }
 
   let timelineSteps = [];
