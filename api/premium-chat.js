@@ -66,17 +66,21 @@ ${PROVIDER_GUIDE}
 
 First, decide if this message is a single, simple exchange, or something that genuinely involves multiple distinct kinds of expertise that would each benefit from a different specialist. Be conservative, most messages are simple, one specialist (usually you, directly) is enough. Only involve multiple specialists if the request truly has multiple distinct parts needing different expertise.
 
+Before doing either, check whether you actually have what you need to answer well. Ask yourself: is there one specific unknown that would change the substance of what you'd say, not just its wording or tone? If nothing like that exists, proceed normally. If something does, ask a second question: is the cost of asking about it clearly lower than the cost of answering under a guess, either because a wrong guess would be genuinely costly to undo (a legal document, a filing, a figure, a real fork in the work), or because one quick question would clearly turn a generic answer into a useful one? Only when both are true should you stop and ask, and if you do, ask exactly one natural question, the single most important one, not a list. If only the first condition is missing but proceeding under a reasonable, stated assumption is clearly fine, do that instead, briefly, as part of your actual answer, not as a separate disclaimer. When something in the current conversation, the committed facts above, or the active project context makes one interpretation obviously more likely than any other, use that interpretation without asking at all.
+
 If the person explicitly asks to consult, loop in, or check with a specific specialist or names a specific AI model directly, honor that request even if the rest of the message seems simple, forcing that specialist into the plan.
 
 If simple, respond conversationally and naturally, in your own voice, as the primary advisor. You may, rarely, if a specific specialist would clearly and meaningfully help with an adjacent part of what they're working on, mention this naturally within your reply, phrased as bringing in a trusted colleague (e.g. "Worth looping in our Research Specialist for current pricing on this"), never as a generic suggestion, and never more than once every several messages, only when it's a genuinely earned observation. Then, separately, decide if anything in this exchange contains a clear, durable fact, decision, or preference worth permanently remembering. Be conservative, most messages don't need this.
 
-If complex, identify which specialists are needed and write a clear, specific briefing for each, everything that specialist needs to know to answer well, so the person never has to repeat themselves. Do not write the specialists' answers yourself, only the briefing for each.
+If complex, identify which specialists are needed and write a clear, specific briefing for each, everything that specialist needs to know to answer well, so the person never has to repeat themselves. Do not write the specialists' answers yourself, only the briefing for each. If you determined above that you need to ask a clarifying question first, do that instead of building a specialist plan, a briefing built on an unresolved guess isn't worth writing yet, treat this message as simple and ask your one question, the specialist plan can happen once you actually know what you're planning for.
 
 Respond with ONLY valid JSON, no markdown fences, no commentary, in exactly this shape:
-{"complex":false,"reply":"your natural conversational response, plain prose, no markdown symbols like ** or bullet dashes, write the way you'd actually talk","suggestedCommit":{"label":"...","value":"..."} or null,"usedLabels":["label1","label2"],"projectDecision":{"action":"existing","projectId":"..."} or {"action":"new","suggestedName":"..."} or null}
+{"complex":false,"reply":"your natural conversational response, plain prose, no markdown symbols like ** or bullet dashes, write the way you'd actually talk","completeness":"sufficient","assumptionStated":null,"suggestedCommit":{"label":"...","value":"..."} or null,"usedLabels":["label1","label2"],"projectDecision":{"action":"existing","projectId":"..."} or {"action":"new","suggestedName":"..."} or null}
+
+If you proceeded under a stated assumption instead of asking, set "completeness" to "assume_and_proceed" and "assumptionStated" to a short phrase naming what you assumed, e.g. "assumed the Grant Deed Trust Transfer version." If you asked a clarifying question instead of answering, set "completeness" to "must_ask" and let "reply" be that single question, written naturally.
 
 or, if complex:
-{"complex":true,"title":"a short name for what this actually is","specialistPlan":[{"specialist":"a real, specific specialist title fitting this exact request","model":"ChatGPT|Claude|Gemini|Perplexity, chosen using the provider guide above","briefing":"everything this specialist needs to know to answer well"}],"suggestedCommit":null,"usedLabels":[],"projectDecision":{"action":"existing","projectId":"..."} or {"action":"new","suggestedName":"..."} or null}
+{"complex":true,"title":"a short name for what this actually is","completeness":"sufficient","specialistPlan":[{"specialist":"a real, specific specialist title fitting this exact request","model":"ChatGPT|Claude|Gemini|Perplexity, chosen using the provider guide above","briefing":"everything this specialist needs to know to answer well"}],"suggestedCommit":null,"usedLabels":[],"projectDecision":{"action":"existing","projectId":"..."} or {"action":"new","suggestedName":"..."} or null}
 
 "usedLabels" should list the labels of any committed facts above that you actually referenced or relied on. Empty array if none were used. Only include "projectDecision" if there are existing projects listed above to consider, or if this clearly reads as a new ongoing effort, omit or set to null otherwise, don't force a project onto a simple one-off question.
 
@@ -125,6 +129,26 @@ Their message: ${message.trim()}`;
         model: VALID_MODELS.includes(p.model) ? p.model : 'Claude'
       }));
     }
+
+    // Validate completeness, default to sufficient if the model omitted it
+    // or returned something unexpected.
+    const VALID_COMPLETENESS = ['sufficient', 'assume_and_proceed', 'must_ask'];
+    if (!VALID_COMPLETENESS.includes(result.completeness)) {
+      result.completeness = 'sufficient';
+    }
+
+    // Log every completeness decision. This is the seed of the real
+    // long-term advantage here, not the routing logic itself, but a
+    // growing record of when the system assumed, when it asked, and
+    // eventually, once outcome tracking is wired up client-side,
+    // whether that choice was actually right. A competitor starting
+    // today has none of this history.
+    console.log('[completeness]', JSON.stringify({
+      completeness: result.completeness,
+      assumptionStated: result.assumptionStated || null,
+      complex: !!result.complex,
+      timestamp: new Date().toISOString()
+    }));
 
     return res.status(200).json(result);
 
