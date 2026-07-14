@@ -249,13 +249,6 @@
 
   // ---------- SCRUBBER: one continuous timeline spanning video + text ----------
   let VIDEO_DURATION = 37.5; // fallback until real metadata loads
-  videoEl.addEventListener('loadedmetadata', () => {
-    if(videoEl.duration && isFinite(videoEl.duration)){
-      VIDEO_DURATION = videoEl.duration;
-      buildTimeline();
-      positionMarker();
-    }
-  });
 
   function positionMarker(){
     const pct = (VIDEO_DURATION / totalDuration) * 100;
@@ -360,6 +353,13 @@
   const finalEl = document.getElementById('finalScene');
   const signatureEl = document.getElementById('signatureLayer');
   const videoEl = document.getElementById('meetingVideo');
+  videoEl.addEventListener('loadedmetadata', () => {
+    if(videoEl.duration && isFinite(videoEl.duration)){
+      VIDEO_DURATION = videoEl.duration;
+      buildTimeline();
+      positionMarker();
+    }
+  });
 
   function hideAll(){
     document.querySelectorAll('.page-line').forEach(el => { el.style.transitionDelay = '0s'; });
