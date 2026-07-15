@@ -127,7 +127,7 @@
   .scrubber-inner{position:relative; width:100%; max-width:420px;}
   #scrubberMarker{
     position:absolute; top:-2px; width:2px; height:6px; background:var(--coral-soft);
-    pointer-events:none; left:0%; transform:translateX(-50%);
+    pointer-events:none; left:0%; margin-left:-1px;
   }
   #scrubber{
     -webkit-appearance:none; appearance:none; width:100%; max-width:420px; height:2px;
@@ -153,7 +153,7 @@
   #controls button:hover{color:var(--lav);}
 
   #privacyLink{
-    position:fixed; bottom:22px; right:22px; z-index:5; font-family:'IBM Plex Mono',monospace; font-size:10px;
+    position:fixed; bottom:4px; left:0; right:0; text-align:center; z-index:5; font-family:'IBM Plex Mono',monospace; font-size:10px;
     color:var(--slate-light); opacity:0.35; text-decoration:none;
   }
   #privacyLink:hover{opacity:0.8;}
@@ -253,8 +253,12 @@
 
   function positionMarker(){
     const pct = (VIDEO_DURATION / totalDuration);
+    const scrubberEl2 = document.getElementById('scrubber');
+    const rect = scrubberEl2.getBoundingClientRect();
     const thumbWidth = 11;
-    document.getElementById('scrubberMarker').style.left = `calc(${thumbWidth/2}px + ${pct} * (100% - ${thumbWidth}px))`;
+    const usableWidth = Math.max(0, rect.width - thumbWidth);
+    const pixelPos = (thumbWidth / 2) + (pct * usableWidth);
+    document.getElementById('scrubberMarker').style.left = pixelPos + 'px';
   }
 
   let timelineSteps = [];
@@ -271,7 +275,7 @@
     totalDuration = cum || VIDEO_DURATION;
   }
   buildTimeline();
-  positionMarker();
+  requestAnimationFrame(() => requestAnimationFrame(positionMarker));
 
   let isDraggingScrubber = false;
   let stepStartedAt = 0;       // Date.now() when this step's content actually appeared
