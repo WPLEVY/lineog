@@ -124,11 +124,6 @@
     opacity:0.35; transition:opacity .3s ease; padding:0 30px;
   }
   #scrubberWrap:hover{opacity:0.9;}
-  .scrubber-inner{position:relative; width:100%; max-width:420px;}
-  #scrubberMarker{
-    position:absolute; top:-2px; width:2px; height:6px; background:var(--coral-soft);
-    pointer-events:none; left:0%; margin-left:-1px;
-  }
   #scrubber{
     -webkit-appearance:none; appearance:none; width:100%; max-width:420px; height:2px;
     background:rgba(255,255,255,0.2); border-radius:2px; outline:none; cursor:pointer;
@@ -197,10 +192,7 @@
 </div>
 
 <div id="scrubberWrap">
-  <div class="scrubber-inner">
-    <input type="range" id="scrubber" min="0" max="1000" value="0">
-    <div id="scrubberMarker"></div>
-  </div>
+  <input type="range" id="scrubber" min="0" max="1000" value="0">
 </div>
 <div id="controls">
   <a href="index.html" style="color:inherit; text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em;">Home</a>
@@ -251,16 +243,6 @@
   // ---------- SCRUBBER: one continuous timeline spanning video + text ----------
   let VIDEO_DURATION = 37.5; // fallback until real metadata loads
 
-  function positionMarker(){
-    const pct = (VIDEO_DURATION / totalDuration);
-    const scrubberEl2 = document.getElementById('scrubber');
-    const rect = scrubberEl2.getBoundingClientRect();
-    const thumbWidth = 11;
-    const usableWidth = Math.max(0, rect.width - thumbWidth);
-    const pixelPos = (thumbWidth / 2) + (pct * usableWidth);
-    document.getElementById('scrubberMarker').style.left = pixelPos + 'px';
-  }
-
   let timelineSteps = [];
   let totalDuration = VIDEO_DURATION;
   function buildTimeline(){
@@ -275,7 +257,6 @@
     totalDuration = cum || VIDEO_DURATION;
   }
   buildTimeline();
-  requestAnimationFrame(() => requestAnimationFrame(positionMarker));
 
   let isDraggingScrubber = false;
   let stepStartedAt = 0;       // Date.now() when this step's content actually appeared
@@ -363,7 +344,6 @@
     if(videoEl.duration && isFinite(videoEl.duration)){
       VIDEO_DURATION = videoEl.duration;
       buildTimeline();
-      positionMarker();
     }
   });
 
