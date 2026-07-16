@@ -74,6 +74,39 @@
 
   /* CHAT SHELL — hidden until the conversation actually starts */
   .chat-shell{display:none; height:100vh; flex-direction:column;}
+  .chat-with-notes{display:flex; flex:1; overflow:hidden; position:relative;}
+  #notesPanel{
+    display:none; flex-direction:column; width:340px; flex-shrink:0;
+    border-left:1px solid rgba(255,255,255,0.08); padding:16px; box-sizing:border-box;
+    background:rgba(0,0,0,0.15);
+  }
+  #notesPanel.show{display:flex;}
+  .notes-panel-header{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:var(--lav);
+  }
+  .notes-close-btn{background:none; border:none; color:var(--slate-light); cursor:pointer; font-size:14px;}
+  .notes-close-btn:hover{color:var(--coral-soft);}
+  #notesTextarea{
+    flex:1; width:100%; resize:none; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    border-radius:10px; padding:12px; color:var(--lav); font-family:'Inter',sans-serif; font-size:13.5px;
+    line-height:1.6; box-sizing:border-box;
+  }
+  #notesTextarea::placeholder{color:var(--slate-light);}
+  .notes-panel-foot{display:flex; justify-content:space-between; align-items:center; margin-top:12px;}
+  #notesStatusLabel{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--slate-light);
+  }
+  #notesStatusLabel.committed{color:var(--coral-soft);}
+
+  @media (max-width: 860px){
+    #notesPanel{
+      position:fixed; top:0; right:0; bottom:0; width:100%; max-width:400px; z-index:20;
+      transform:translateX(100%); transition:transform .25s ease; box-shadow:-8px 0 30px rgba(0,0,0,0.4);
+    }
+    #notesPanel.show{display:flex; transform:translateX(0);}
+  }
   .chat-shell.active{display:flex;}
   .chat-shell nav{
     display:flex; align-items:center; justify-content:space-between;
@@ -102,6 +135,10 @@
   .msg-row.user{text-align:right;}
   .msg-row.user .bubble{background:var(--coral); color:#fff;}
   .msg-row.ai .bubble{background:none; border:none; padding:2px 0; max-width:100%; color:var(--lav);}
+  .reply-header{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--slate-light); margin-bottom:6px; opacity:0.7;
+  }
   .auto-notice{
     display:block; margin-top:8px; font-size:11.5px; color:var(--slate-light); font-family:'IBM Plex Mono',monospace;
   }
@@ -389,22 +426,37 @@
   <nav>
     <div class="wordmark"><span class="dot"></span>LINEOG</div>
     <div class="quiet-links">
-      <button class="quiet-link" onclick="switchView('projects')">Projects</button>
+      <button class="quiet-link" onclick="switchView('projects')">Matters</button>
       <button class="quiet-link" onclick="switchView('rules')">Rules</button>
       <button class="quiet-link" onclick="openVault()">My Vault</button>
+      <button class="quiet-link" id="notesToggleBtn" onclick="toggleNotesPanel()">Notes</button>
     </div>
   </nav>
 
+  <div class="chat-with-notes">
   <div class="view active" id="view-chat">
     <div id="chatLog"></div>
     <div id="relatedProjectRow">
-      <span id="relatedProjectLabel">No related project</span>
+      <span id="relatedProjectLabel">No related matter</span>
       <button onclick="pickProject()">Change</button>
     </div>
     <div id="chatInputRow">
-      <input type="text" id="chatInput" placeholder="What's on your mind?">
+      <input type="text" id="chatInput" placeholder="What can I help you with?">
       <button id="sendBtn" onclick="sendMessage()">Send</button>
     </div>
+  </div>
+
+  <div id="notesPanel">
+    <div class="notes-panel-header">
+      <span id="notesPanelTitle">Working Notes</span>
+      <button class="notes-close-btn" onclick="toggleNotesPanel()">✕</button>
+    </div>
+    <textarea id="notesTextarea" placeholder="Your workspace. Pull in ideas, draft your thinking, decide what's ready." oninput="onNotesInput()"></textarea>
+    <div class="notes-panel-foot">
+      <span id="notesStatusLabel">Private</span>
+      <button class="submit-btn" onclick="commitNote()">Commit to Matter</button>
+    </div>
+  </div>
   </div>
 
   <div class="view" id="view-timeline">
@@ -421,7 +473,7 @@
       </div>
       <div id="searchResult"></div>
       <div id="relatedProjectRowSearch" style="margin-top:20px;">
-        <span id="relatedProjectLabelSearch">No related project</span>
+        <span id="relatedProjectLabelSearch">No related matter</span>
         <button onclick="pickProject()">Change</button>
       </div>
     </div>
@@ -430,12 +482,12 @@
   <div class="view" id="view-projects">
     <div id="projectsWrap">
       <div class="projects-header">
-        <h2>Projects</h2>
+        <h2>Matters</h2>
       </div>
-      <p class="hint">Living engagements, not folders.</p>
+      <p class="hint">Every matter, its own working file.</p>
       <div class="rules-add-row">
-        <input type="text" id="projectInput" placeholder="Name of project">
-        <button id="projectAddBtn" onclick="createProjectInline()">Add project</button>
+        <input type="text" id="projectInput" placeholder="Name of matter">
+        <button id="projectAddBtn" onclick="createProjectInline()">Add matter</button>
       </div>
       <div id="projectsList"></div>
     </div>
@@ -478,13 +530,25 @@
 
 <div class="pin-overlay" id="pickerOverlay">
   <div class="pin-card" style="max-width:360px;">
-    <div class="pin-title">Related project</div>
+    <div class="pin-title">Related matter</div>
     <div id="pickerList" style="margin:16px 0; text-align:left;"></div>
     <div id="pickerEmptyCreate" style="display:none;">
-      <input type="text" id="pickerNewName" class="modal-input" placeholder="Name of Project" style="margin-bottom:10px;">
+      <input type="text" id="pickerNewName" class="modal-input" placeholder="Name of Matter" style="margin-bottom:10px;">
       <button class="submit-btn" onclick="createProjectFromPicker()" style="width:100%;">Create and link</button>
     </div>
     <button class="pin-cancel" onclick="document.getElementById('pickerOverlay').classList.remove('show')" style="margin-top:12px;">Close</button>
+  </div>
+</div>
+
+<div class="pin-overlay" id="notePickerOverlay">
+  <div class="pin-card" style="max-width:360px;">
+    <div class="pin-title">Commit to which matter?</div>
+    <div id="notePickerList" style="margin:16px 0; text-align:left;"></div>
+    <div id="notePickerEmptyCreate" style="display:none;">
+      <input type="text" id="notePickerNewName" class="modal-input" placeholder="Name of Matter" style="margin-bottom:10px;">
+      <button class="submit-btn" onclick="createMatterFromNotePicker()" style="width:100%;">Create and commit</button>
+    </div>
+    <button class="pin-cancel" onclick="document.getElementById('notePickerOverlay').classList.remove('show')" style="margin-top:12px;">Cancel</button>
   </div>
 </div>
 
@@ -782,7 +846,7 @@
   }
 
   async function createProject(){
-    const name = await showModal('Name of Project', '');
+    const name = await showModal('Name of Matter', '');
     if(!name) return;
     const { data, error } = await sb.from('projects').insert({ user_id: currentUser.id, name: name.trim() }).select().single();
     if(error){
@@ -827,11 +891,144 @@
 
   function setActiveProject(project){
     activeProject = project;
-    const labelText = project ? `Related project: ${project.name}` : 'No related project';
+    const labelText = project ? `Related matter: ${project.name}` : 'No related matter';
     const label = document.getElementById('relatedProjectLabel');
     if(label) label.textContent = labelText;
     const labelSearch = document.getElementById('relatedProjectLabelSearch');
     if(labelSearch) labelSearch.textContent = labelText;
+    const notesPanel = document.getElementById('notesPanel');
+    if(notesPanel && notesPanel.classList.contains('show')){
+      loadNoteForContext();
+    }
+  }
+
+  // ---------- WORKING NOTES ----------
+  let currentNote = null; // the note row currently loaded for this context
+  let notesSaveTimeout = null;
+
+  async function toggleNotesPanel(){
+    const panel = document.getElementById('notesPanel');
+    const wasShown = panel.classList.contains('show');
+    if(wasShown){
+      panel.classList.remove('show');
+      return;
+    }
+    panel.classList.add('show');
+    await loadNoteForContext();
+  }
+
+  async function loadNoteForContext(){
+    const title = activeProject ? `Working Notes — ${activeProject.name}` : 'Working Notes — General';
+    document.getElementById('notesPanelTitle').textContent = title;
+
+    let query = sb.from('notes').select('*').eq('user_id', currentUser.id).eq('committed', false);
+    query = activeProject ? query.eq('project_id', activeProject.id) : query.is('project_id', null);
+    const { data, error } = await query.order('updated_at', { ascending: false }).limit(1);
+
+    if(error){ console.error('Could not load notes', error); return; }
+
+    if(data && data.length){
+      currentNote = data[0];
+      document.getElementById('notesTextarea').value = currentNote.content;
+    } else {
+      currentNote = null;
+      document.getElementById('notesTextarea').value = '';
+    }
+    updateNotesStatusLabel();
+  }
+
+  function updateNotesStatusLabel(){
+    const label = document.getElementById('notesStatusLabel');
+    label.textContent = 'Private';
+    label.classList.remove('committed');
+  }
+
+  function onNotesInput(){
+    clearTimeout(notesSaveTimeout);
+    notesSaveTimeout = setTimeout(saveNoteDraft, 600);
+  }
+
+  async function saveNoteDraft(){
+    const content = document.getElementById('notesTextarea').value;
+    if(currentNote){
+      const { error } = await sb.from('notes').update({ content, updated_at: new Date().toISOString() }).eq('id', currentNote.id);
+      if(error) console.error('Could not save note', error);
+    } else {
+      if(!content.trim()) return;
+      const { data, error } = await sb.from('notes').insert({
+        user_id: currentUser.id,
+        project_id: activeProject ? activeProject.id : null,
+        content
+      }).select().single();
+      if(error){ console.error('Could not create note', error); return; }
+      currentNote = data;
+    }
+  }
+
+  async function commitNote(){
+    if(!currentNote || !currentNote.content || !currentNote.content.trim()){
+      return;
+    }
+    await saveNoteDraft();
+    openNoteCommitPicker();
+  }
+
+  function openNoteCommitPicker(){
+    const list = document.getElementById('notePickerList');
+    const emptyCreate = document.getElementById('notePickerEmptyCreate');
+
+    if(projects.length === 0){
+      list.innerHTML = `<button class="picker-item none" onclick="finalizeNoteCommit(null)">General, not tied to a matter</button>`;
+      emptyCreate.style.display = 'block';
+    } else {
+      emptyCreate.style.display = 'none';
+      list.innerHTML = `
+        <button class="picker-item none" onclick="finalizeNoteCommit(null)">General, not tied to a matter</button>
+        ${projects.map(p => `<button class="picker-item" onclick='finalizeNoteCommit(${JSON.stringify(p.id)})'>${escapeHtml(p.name)}</button>`).join('')}
+      `;
+    }
+    document.getElementById('notePickerOverlay').classList.add('show');
+  }
+
+  async function createMatterFromNotePicker(){
+    const nameInput = document.getElementById('notePickerNewName');
+    const name = nameInput.value.trim();
+    if(!name) return;
+    const { data, error } = await sb.from('projects').insert({ user_id: currentUser.id, name }).select().single();
+    if(error){ console.error('Could not create matter', error); return; }
+    projects.unshift(data);
+    nameInput.value = '';
+    await finalizeNoteCommit(data.id);
+  }
+
+  async function finalizeNoteCommit(projectId){
+    document.getElementById('notePickerOverlay').classList.remove('show');
+    const content = currentNote.content;
+
+    const { data: factData, error: factError } = await sb.from('facts').insert({
+      user_id: currentUser.id,
+      label: 'From Working Notes',
+      value: content,
+      project_id: projectId
+    }).select().single();
+    if(factError){ console.error('Could not commit note', factError); return; }
+
+    await sb.from('notes').update({
+      committed: true,
+      committed_at: new Date().toISOString(),
+      committed_fact_id: factData.id,
+      project_id: projectId
+    }).eq('id', currentNote.id);
+
+    commits.unshift({ id: factData.id, label: factData.label, value: factData.value, date: factData.created_at, lastReferenced: null });
+
+    const label = document.getElementById('notesStatusLabel');
+    label.textContent = 'Committed';
+    label.classList.add('committed');
+
+    currentNote = null;
+    document.getElementById('notesTextarea').value = '';
+    setTimeout(() => { updateNotesStatusLabel(); }, 2000);
   }
 
   function pickProject(){
@@ -1090,14 +1287,15 @@
     }
   }
 
-  function appendMessage(role, text, rowId){
+  function appendMessage(role, text, rowId, headerLabel){
     const log = document.getElementById('chatLog');
     const row = document.createElement('div');
     row.className = 'msg-row ' + role;
     row.id = rowId;
     const displayText = role === 'ai' ? formatReply(text) : escapeHtml(text);
+    const headerHtml = headerLabel ? `<div class="reply-header">${headerLabel}</div>` : '';
     row.innerHTML = `
-      <div class="bubble">${displayText}</div><br>
+      ${headerHtml}<div class="bubble">${displayText}</div><br>
       <button class="save-icon-btn" onclick="manualSave('${rowId}')" title="Save this">💾</button>
       <div class="suggest-slot"></div>
     `;
@@ -1161,7 +1359,7 @@
     const log = document.getElementById('chatLog');
     const thinkRow = document.createElement('div');
     thinkRow.className = 'thinking-row';
-    thinkRow.textContent = 'Thinking...';
+    thinkRow.textContent = 'Reviewing...';
     log.appendChild(thinkRow);
     log.scrollTop = log.scrollHeight;
 
@@ -1187,7 +1385,8 @@
         await runActivityStream(parsed.specialistPlan, text, aiRowId);
       } else {
         aiRowId = 'row-' + Date.now() + '-ai';
-        const row = appendMessage('ai', parsed.reply, aiRowId);
+        const headerLabel = parsed.completeness === 'must_ask' ? 'Questions Before We Proceed' : 'Recommendation';
+        const row = appendMessage('ai', parsed.reply, aiRowId, headerLabel);
         messages.push({ role: 'assistant', text: parsed.reply });
 
         if(parsed.suggestedCommit){
