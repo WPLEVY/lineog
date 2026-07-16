@@ -3,6 +3,8 @@
 // breakdown, instead of simulating that model's answer through Claude.
 // All four keys live only here, never sent to the browser.
 
+import { rateLimit } from './_rateLimit.js';
+
 async function callClaude(prompt) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
@@ -103,6 +105,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  if (!rateLimit(req, res, { windowMs: 60000, maxRequests: 20 })) return;
 
   const { model, specialist, name, guidance } = req.body || {};
 

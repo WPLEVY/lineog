@@ -4,10 +4,14 @@
 // passwords, no persistent project storage. Just enough to know real
 // intent exists before building any of that.
 
+import { rateLimit } from './_rateLimit.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  if (!rateLimit(req, res, { windowMs: 60000, maxRequests: 10 })) return;
 
   const { email, task, recommended } = req.body || {};
 

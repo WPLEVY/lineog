@@ -2,10 +2,13 @@
 // Secure server-side search over a user's committed knowledge.
 // The Anthropic key lives only here, never sent to the browser.
 
+import { rateLimit } from './_rateLimit.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  if (!rateLimit(req, res, { windowMs: 60000, maxRequests: 20 })) return;
 
   const { question, commits } = req.body || {};
   if (!question || typeof question !== 'string' || question.trim().length === 0) {

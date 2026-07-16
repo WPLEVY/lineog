@@ -2,6 +2,8 @@
 // Vercel serverless function. Runs on the server only — this file's contents
 // are never sent to the browser, so the API key stays private here.
 
+import { rateLimit } from './_rateLimit.js';
+
 // Simple in-memory cache for identical, repeated questions.
 // Caveat, worth knowing: this resets whenever Vercel spins up a fresh
 // instance (a "cold start"), and isn't shared across multiple concurrent
@@ -17,6 +19,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  if (!rateLimit(req, res, { windowMs: 60000, maxRequests: 15 })) return;
 
   const { task } = req.body || {};
 

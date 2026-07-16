@@ -2,10 +2,14 @@
 // Honestly classifies whether a user's requested rule can genuinely be
 // attempted or is structurally impossible. Key stays server-side.
 
+import { rateLimit } from './_rateLimit.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  if (!rateLimit(req, res, { windowMs: 60000, maxRequests: 20 })) return;
 
   const { text } = req.body || {};
   if (!text || typeof text !== 'string' || text.trim().length === 0) {

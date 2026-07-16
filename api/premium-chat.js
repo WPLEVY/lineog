@@ -10,6 +10,8 @@
 // The model itself also picks which real provider fits each specialist,
 // based on the kind of work involved, not a lookup table.
 
+import { rateLimit } from './_rateLimit.js';
+
 const PROVIDER_GUIDE = `When choosing which real provider best fits a specialist you're inventing, use these strengths:
 - Perplexity: current, local, or factual information that needs to be looked up (regulations, permit requirements, pricing, availability, anything time-sensitive or location-specific)
 - Claude: careful reasoning, compliance, legal or contractual nuance, writing, negotiation, anything requiring judgment
@@ -20,6 +22,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  if (!rateLimit(req, res, { windowMs: 60000, maxRequests: 20 })) return;
 
   const { message, commits, rules, projectContext, existingProjects, recentHistory } = req.body || {};
 

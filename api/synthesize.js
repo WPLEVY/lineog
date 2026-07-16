@@ -4,10 +4,13 @@
 // with a single answer, the way a trusted advisor would summarize
 // what the team found, not hand you off to each of them separately.
 
+import { rateLimit } from './_rateLimit.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  if (!rateLimit(req, res, { windowMs: 60000, maxRequests: 20 })) return;
 
   const { originalMessage, results } = req.body || {};
 

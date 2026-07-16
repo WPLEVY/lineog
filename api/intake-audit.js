@@ -4,10 +4,13 @@
 // buried decisions, and extracts real structured objects for the
 // Knowledge Layer (People, Companies, Preferences, dated Facts).
 
+import { rateLimit } from './_rateLimit.js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  if (!rateLimit(req, res, { windowMs: 60000, maxRequests: 10 })) return;
 
   const { pastedText } = req.body || {};
   if (!pastedText || typeof pastedText !== 'string' || pastedText.trim().length < 20) {
