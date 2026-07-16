@@ -19,7 +19,7 @@
     color:var(--lav); font-family:'Inter',sans-serif;
     height:100vh; display:flex; flex-direction:column; overflow:hidden;
   }
-  /* ENTRY HERO — matches the free tool exactly */
+  /* ENTRY HERO, matches the free tool exactly */
   .entry{
     min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
   }
@@ -72,7 +72,7 @@
     padding:12px 24px; cursor:pointer;
   }
 
-  /* CHAT SHELL — hidden until the conversation actually starts */
+  /* CHAT SHELL, hidden until the conversation actually starts */
   .chat-shell{display:none; height:100vh; flex-direction:column;}
   .chat-with-notes{display:flex; flex:1; overflow:hidden; position:relative;}
   #notesPanel{
@@ -262,6 +262,10 @@
     border:1px solid rgba(255,255,255,0.15); border-radius:10px; background:rgba(0,0,0,0.2); color:var(--lav);
   }
   .modal-input::placeholder{color:var(--slate-light);}
+  .modal-label{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--slate-light); margin-bottom:6px; text-align:left;
+  }
   .submit-btn{
     font-family:'Inter',sans-serif; font-weight:600; font-size:14px; color:#fff;
     background:var(--coral); border:none; border-radius:100px; padding:10px 22px; cursor:pointer;
@@ -451,10 +455,10 @@
       <span id="notesPanelTitle">Working Notes</span>
       <button class="notes-close-btn" onclick="toggleNotesPanel()">✕</button>
     </div>
-    <textarea id="notesTextarea" placeholder="Your workspace. Pull in ideas, draft your thinking, decide what's ready." oninput="onNotesInput()"></textarea>
+    <textarea id="notesTextarea" placeholder="" oninput="onNotesInput()"></textarea>
     <div class="notes-panel-foot">
       <span id="notesStatusLabel">Private</span>
-      <button class="submit-btn" onclick="commitNote()">Commit to Matter</button>
+      <button class="submit-btn" onclick="commitNote()">Add to File</button>
     </div>
   </div>
   </div>
@@ -533,8 +537,9 @@
     <div class="pin-title">Related matter</div>
     <div id="pickerList" style="margin:16px 0; text-align:left;"></div>
     <div id="pickerEmptyCreate" style="display:none;">
-      <input type="text" id="pickerNewName" class="modal-input" placeholder="Name of Matter" style="margin-bottom:10px;">
-      <button class="submit-btn" onclick="createProjectFromPicker()" style="width:100%;">Create and link</button>
+      <div class="modal-label">Name of Matter</div>
+      <input type="text" id="pickerNewName" class="modal-input" placeholder="" style="margin-bottom:10px;">
+      <button class="submit-btn" onclick="createProjectFromPicker()" style="width:100%;">Create</button>
     </div>
     <button class="pin-cancel" onclick="document.getElementById('pickerOverlay').classList.remove('show')" style="margin-top:12px;">Close</button>
   </div>
@@ -545,8 +550,9 @@
     <div class="pin-title">Commit to which matter?</div>
     <div id="notePickerList" style="margin:16px 0; text-align:left;"></div>
     <div id="notePickerEmptyCreate" style="display:none;">
-      <input type="text" id="notePickerNewName" class="modal-input" placeholder="Name of Matter" style="margin-bottom:10px;">
-      <button class="submit-btn" onclick="createMatterFromNotePicker()" style="width:100%;">Create and commit</button>
+      <div class="modal-label">Name of Matter</div>
+      <input type="text" id="notePickerNewName" class="modal-input" placeholder="" style="margin-bottom:10px;">
+      <button class="submit-btn" onclick="createMatterFromNotePicker()" style="width:100%;">Create</button>
     </div>
     <button class="pin-cancel" onclick="document.getElementById('notePickerOverlay').classList.remove('show')" style="margin-top:12px;">Cancel</button>
   </div>
@@ -918,7 +924,7 @@
   }
 
   async function loadNoteForContext(){
-    const title = activeProject ? `Working Notes — ${activeProject.name}` : 'Working Notes — General';
+    const title = activeProject ? `Working Notes: ${activeProject.name}` : 'Working Notes: General';
     document.getElementById('notesPanelTitle').textContent = title;
 
     let query = sb.from('notes').select('*').eq('user_id', currentUser.id).eq('committed', false);
@@ -966,7 +972,8 @@
   }
 
   async function commitNote(){
-    if(!currentNote || !currentNote.content || !currentNote.content.trim()){
+    const content = document.getElementById('notesTextarea').value;
+    if(!content || !content.trim()){
       return;
     }
     await saveNoteDraft();
@@ -977,16 +984,11 @@
     const list = document.getElementById('notePickerList');
     const emptyCreate = document.getElementById('notePickerEmptyCreate');
 
-    if(projects.length === 0){
-      list.innerHTML = `<button class="picker-item none" onclick="finalizeNoteCommit(null)">General, not tied to a matter</button>`;
-      emptyCreate.style.display = 'block';
-    } else {
-      emptyCreate.style.display = 'none';
-      list.innerHTML = `
-        <button class="picker-item none" onclick="finalizeNoteCommit(null)">General, not tied to a matter</button>
-        ${projects.map(p => `<button class="picker-item" onclick='finalizeNoteCommit(${JSON.stringify(p.id)})'>${escapeHtml(p.name)}</button>`).join('')}
-      `;
-    }
+    list.innerHTML = `
+      <button class="picker-item none" onclick="finalizeNoteCommit(null)">General, not tied to a matter</button>
+      ${projects.map(p => `<button class="picker-item" onclick='finalizeNoteCommit(${JSON.stringify(p.id)})'>${escapeHtml(p.name)}</button>`).join('')}
+    `;
+    emptyCreate.style.display = 'block';
     document.getElementById('notePickerOverlay').classList.add('show');
   }
 
@@ -1035,16 +1037,11 @@
     const list = document.getElementById('pickerList');
     const emptyCreate = document.getElementById('pickerEmptyCreate');
 
-    if(projects.length === 0){
-      list.innerHTML = '';
-      emptyCreate.style.display = 'block';
-    } else {
-      emptyCreate.style.display = 'none';
-      list.innerHTML = `
-        <button class="picker-item none" onclick="setActiveProject(null); document.getElementById('pickerOverlay').classList.remove('show');">None</button>
-        ${projects.map(p => `<button class="picker-item" onclick='setActiveProject(${JSON.stringify(p)}); document.getElementById("pickerOverlay").classList.remove("show");'>${escapeHtml(p.name)}</button>`).join('')}
-      `;
-    }
+    list.innerHTML = `
+      <button class="picker-item none" onclick="setActiveProject(null); document.getElementById('pickerOverlay').classList.remove('show');">None</button>
+      ${projects.map(p => `<button class="picker-item" onclick='setActiveProject(${JSON.stringify(p)}); document.getElementById("pickerOverlay").classList.remove("show");'>${escapeHtml(p.name)}</button>`).join('')}
+    `;
+    emptyCreate.style.display = 'block';
     document.getElementById('pickerOverlay').classList.add('show');
   }
 
@@ -1369,6 +1366,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text, commits, rules, projectContext: activeProject,
+          recentHistory: messages.slice(-16),
           existingProjects: activeProject ? [] : projects.filter(p => p.status === 'active').map(p => ({ id: p.id, name: p.name }))
         })
       });
