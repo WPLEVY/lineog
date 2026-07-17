@@ -218,23 +218,13 @@
     }
     showMsg('Signed in. Taking you to LINEOG...', 'success');
 
-    const isFirstTime = await checkFirstTimeUser(data.user.id);
     setTimeout(() => {
-      window.location.href = isFirstTime ? 'intake.html' : 'app.html';
+      window.location.href = 'app.html';
     }, 800);
     return false;
   }
 
-  async function checkFirstTimeUser(userId){
-    try{
-      const { count: peopleCount } = await sb.from('people').select('*', { count: 'exact', head: true }).eq('user_id', userId);
-      const { count: rulesCount } = await sb.from('rules').select('*', { count: 'exact', head: true }).eq('user_id', userId);
-      return (peopleCount || 0) === 0 && (rulesCount || 0) === 0;
-    } catch(err){
-      console.error('Could not check first-time status', err);
-      return false;
-    }
-  }
+
 
   async function handleSignUp(e){
     e.preventDefault();
@@ -264,14 +254,7 @@
   }
 
   // If someone's already signed in, skip straight to the vault.
-  async function checkExistingSession(){
-    if(!isConfigured) return;
-    const { data } = await sb.auth.getSession();
-    if(data.session){
-      window.location.href = 'app.html';
-    }
-  }
-  checkExistingSession();
+
 </script>
 </body>
 </html>

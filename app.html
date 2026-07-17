@@ -394,6 +394,13 @@
     background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14); padding:7px 14px; border-radius:100px; cursor:pointer;
   }
   .project-activate-btn.active{background:var(--coral); border-color:var(--coral);}
+  .project-details-toggle{
+    display:block; margin-top:8px; background:none; border:none; color:var(--slate-light);
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.04em; cursor:pointer; padding:0;
+  }
+  .project-details-toggle:hover{color:var(--coral-soft);}
+  .project-details{display:none; margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);}
+  .project-details.show{display:block;}
 
   #relatedProjectRow, #relatedProjectRowSearch{
     display:flex; justify-content:center; align-items:center; gap:10px; padding:8px 24px;
@@ -1130,41 +1137,47 @@
           <div class="project-name">${escapeHtml(p.name)}</div>
           <div class="project-status">${escapeHtml(p.status)}</div>
 
-          <div class="project-field">
-            <div class="project-field-label">Mission</div>
-            <div class="project-field-value" onclick="editProjectField('${p.id}','mission', ${JSON.stringify(p.mission || '')})">${p.mission ? escapeHtml(p.mission) : 'Click to set your North Star for this project'}</div>
-          </div>
-
-          <div class="project-field">
-            <div class="project-field-label">Current objective</div>
-            <div class="project-field-value" onclick="editProjectField('${p.id}','current_objective', ${JSON.stringify(p.current_objective || '')})">${p.current_objective ? escapeHtml(p.current_objective) : 'Click to set what you\'re focused on right now'}</div>
-          </div>
-
-          <div class="project-field">
-            <div class="project-field-label">Open questions</div>
-            <div class="project-list-items">
-              ${(questions || []).map(q => `<div class="project-list-item">${escapeHtml(q.question)}</div>`).join('') || '<div class="project-list-item" style="opacity:0.5;">None yet</div>'}
-            </div>
-            <div class="project-add-row">
-              <input type="text" id="newq-${p.id}" placeholder="Add an open question">
-              <button onclick="addOpenQuestion('${p.id}')">Add</button>
-            </div>
-          </div>
-
-          <div class="project-field">
-            <div class="project-field-label">Decisions</div>
-            <div class="project-list-items">
-              ${(decisions || []).map(d => `<div class="project-list-item">${escapeHtml(d.decision)}</div>`).join('') || '<div class="project-list-item" style="opacity:0.5;">None yet</div>'}
-            </div>
-            <div class="project-add-row">
-              <input type="text" id="newd-${p.id}" placeholder="Log a decision">
-              <button onclick="addDecision('${p.id}')">Add</button>
-            </div>
-          </div>
-
           <button class="project-activate-btn ${activeProject && activeProject.id === p.id ? 'active' : ''}" onclick='setActiveProject(${JSON.stringify(p)})'>
             ${activeProject && activeProject.id === p.id ? '✓ Active for this conversation' : 'Make active for this conversation'}
           </button>
+
+          <button class="project-details-toggle" onclick="document.getElementById('details-${p.id}').classList.toggle('show')">Details</button>
+
+          <div class="project-details" id="details-${p.id}">
+
+            <div class="project-field">
+              <div class="project-field-label">Mission</div>
+              <div class="project-field-value" onclick="editProjectField('${p.id}','mission', ${JSON.stringify(p.mission || '')})">${p.mission ? escapeHtml(p.mission) : 'Click to set your North Star for this project'}</div>
+            </div>
+
+            <div class="project-field">
+              <div class="project-field-label">Current objective</div>
+              <div class="project-field-value" onclick="editProjectField('${p.id}','current_objective', ${JSON.stringify(p.current_objective || '')})">${p.current_objective ? escapeHtml(p.current_objective) : 'Click to set what you\'re focused on right now'}</div>
+            </div>
+
+            <div class="project-field">
+              <div class="project-field-label">Open questions</div>
+              <div class="project-list-items">
+                ${(questions || []).map(q => `<div class="project-list-item">${escapeHtml(q.question)}</div>`).join('') || '<div class="project-list-item" style="opacity:0.5;">None yet</div>'}
+              </div>
+              <div class="project-add-row">
+                <input type="text" id="newq-${p.id}" placeholder="Add an open question">
+                <button onclick="addOpenQuestion('${p.id}')">Add</button>
+              </div>
+            </div>
+
+            <div class="project-field">
+              <div class="project-field-label">Decisions</div>
+              <div class="project-list-items">
+                ${(decisions || []).map(d => `<div class="project-list-item">${escapeHtml(d.decision)}</div>`).join('') || '<div class="project-list-item" style="opacity:0.5;">None yet</div>'}
+              </div>
+              <div class="project-add-row">
+                <input type="text" id="newd-${p.id}" placeholder="Log a decision">
+                <button onclick="addDecision('${p.id}')">Add</button>
+              </div>
+            </div>
+
+          </div>
         </div>`;
     }));
 
