@@ -81,7 +81,15 @@
   .col-left{
     width:220px; flex-shrink:0; border-right:1px solid rgba(255,255,255,0.08);
     overflow-y:auto; padding:18px 14px; box-sizing:border-box;
+    display:flex; flex-direction:column;
   }
+  .sign-out-btn{
+    margin-top:auto; padding-top:18px; border-top:1px solid rgba(255,255,255,0.08);
+    background:none; border-left:none; border-right:none; border-bottom:none;
+    color:var(--slate-light); font-family:'IBM Plex Mono',monospace; font-size:11px;
+    letter-spacing:0.04em; text-align:left; cursor:pointer;
+  }
+  .sign-out-btn:hover{color:var(--coral-soft);}
   .col-left-header{
     font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
     color:var(--slate-light); margin-bottom:14px; padding:0 6px;
@@ -367,8 +375,8 @@
     background:var(--coral); border:none; padding:9px 16px; border-radius:100px; cursor:pointer;
   }
   .project-card{
-    background:rgba(255,255,255,0.045); border:1px solid rgba(255,255,255,0.09); border-radius:16px;
-    padding:20px 22px; margin:20px 0;
+    background:rgba(255,255,255,0.045); border:1px solid rgba(255,255,255,0.09); border-radius:14px;
+    padding:16px 18px; margin-bottom:12px;
   }
   .project-name{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; color:var(--lav); margin-bottom:4px;}
   .project-status{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--mint); text-transform:uppercase; margin-bottom:14px;}
@@ -474,7 +482,6 @@
       <button class="right-tab" id="tabBtn-vault" onclick="openVault()">Vault</button>
       <button class="right-tab" id="tabBtn-projects" onclick="switchRightTab('projects')">Matters</button>
       <button class="right-tab" id="tabBtn-notes" onclick="switchRightTab('notes')">Notes</button>
-      <button class="quiet-link" onclick="signOut()">Sign Out</button>
     </div>
   </nav>
 
@@ -483,6 +490,7 @@
     <div class="col-left" id="colLeft">
       <div class="col-left-header">Matters</div>
       <div id="mattersNavList"></div>
+      <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
     </div>
 
     <div class="col-middle">
@@ -659,7 +667,7 @@
   function goStraightToVault(){
     document.getElementById('entryHero').style.display = 'none';
     document.getElementById('chatShell').classList.add('active');
-    requestPinThen(() => switchView('vault'));
+    requestPinThen(() => switchRightTab('vault'));
   }
 
   // ---------- GENERIC MODAL (replaces native prompt() everywhere) ----------
