@@ -75,8 +75,9 @@
   /* CHAT SHELL, hidden until the conversation actually starts */
   .chat-shell{display:none; height:100vh; flex-direction:column;}
   .chat-with-notes{display:flex; flex:1; overflow:hidden; position:relative;}
+  #view-chat{order:1;}
   #notesPanel{
-    display:none; flex-direction:column; width:340px; flex-shrink:0;
+    order:2; display:none; flex-direction:column; width:340px; flex-shrink:0; height:100%;
     border-left:1px solid rgba(255,255,255,0.08); padding:16px; box-sizing:border-box;
     background:rgba(0,0,0,0.15);
   }
@@ -434,6 +435,7 @@
       <button class="quiet-link" onclick="switchView('rules')">Rules</button>
       <button class="quiet-link" onclick="openVault()">My Vault</button>
       <button class="quiet-link" id="notesToggleBtn" onclick="toggleNotesPanel()">Notes</button>
+      <button class="quiet-link" onclick="signOut()">Sign Out</button>
     </div>
   </nav>
 
@@ -602,6 +604,11 @@
     return true;
   }
 
+  async function signOut(){
+    await sb.auth.signOut();
+    window.location.href = 'lineog-login.html';
+  }
+
   // ---------- STATE ----------
   let commits = [];   // {id, label, value, date}
   let rules = [];     // {id, text, status, reason, date}
@@ -663,8 +670,7 @@
 
   async function loadPin(){
     try{
-      const result = await window.storage.get('lineog-vault-pin', false);
-      vaultPin = result ? result.value : null;
+      vaultPin = localStorage.getItem('lineog-vault-pin') || null;
     } catch(e){
       vaultPin = null;
     }
@@ -698,7 +704,7 @@
 
   async function resetPin(){
     if(!confirm('Reset your vault PIN? You\'ll set a new one right now.')) return;
-    try{ await window.storage.delete('lineog-vault-pin', false); } catch(e){ console.error(e); }
+    try{ localStorage.removeItem('lineog-vault-pin'); } catch(e){ console.error(e); }
     vaultPin = null;
     pinBuffer = '';
     document.getElementById('pinHiddenInput').value = '';
@@ -718,7 +724,7 @@
     if(pinMode === 'create'){
       vaultPin = pinBuffer;
       vaultUnlockedThisSession = true;
-      try{ await window.storage.set('lineog-vault-pin', vaultPin, false); } catch(e){ console.error(e); }
+      try{ localStorage.setItem('lineog-vault-pin', vaultPin); } catch(e){ console.error(e); }
       document.getElementById('pinOverlay').classList.remove('show');
       pinBuffer = '';
       document.getElementById('pinHiddenInput').value = '';
