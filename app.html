@@ -411,6 +411,31 @@
   }
 
   #rulesWrap{width:100%;}
+
+  #view-settings h2{font-family:'Space Grotesk',sans-serif; font-size:20px; margin-bottom:24px;}
+  .settings-section{margin-bottom:28px; padding-bottom:24px; border-bottom:1px solid rgba(255,255,255,0.08);}
+  .settings-section:last-of-type{border-bottom:none;}
+  .settings-label{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--slate-light); margin-bottom:10px;
+  }
+  .settings-label.danger{color:#ff6b6b;}
+  .settings-row{font-size:14px; color:var(--lav); margin-bottom:12px;}
+  .settings-btn{
+    display:block; width:100%; text-align:left; background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:var(--lav);
+    font-family:'Inter',sans-serif; font-size:13.5px; padding:10px 14px; cursor:pointer; margin-top:6px;
+  }
+  .settings-btn:hover{background:rgba(255,255,255,0.08);}
+  .settings-btn.danger{border-color:rgba(255,107,107,0.3); color:#ff6b6b;}
+  .settings-btn.danger:hover{background:rgba(255,107,107,0.08);}
+  .episodes-list{max-height:280px; overflow-y:auto;}
+  .episodes-empty{color:var(--slate-light); font-size:13px;}
+  .episode-item{padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06); font-size:13px;}
+  .episode-item:last-child{border-bottom:none;}
+  .episode-date{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--slate-light); margin-bottom:4px;}
+  .episode-msg{color:var(--lav); margin-bottom:2px;}
+  .episode-reply{color:var(--slate-light);}
   #rulesWrap h2{font-family:'Space Grotesk',sans-serif; font-size:20px; margin-bottom:16px;}
   #rulesWrap .hint{color:var(--slate-light); font-size:14px; margin-bottom:22px;}
   .rules-add-row{display:flex; flex-direction:column; gap:8px; margin-bottom:26px;}
@@ -489,6 +514,7 @@
       <button class="right-tab" id="tabBtn-vault" onclick="openVault()">Vault</button>
       <button class="right-tab" id="tabBtn-projects" onclick="switchRightTab('projects')">Matters</button>
       <button class="right-tab" id="tabBtn-notes" onclick="switchRightTab('notes')">Notes</button>
+      <button class="right-tab" id="tabBtn-settings" onclick="switchRightTab('settings')">Settings</button>
     </div>
   </nav>
 
@@ -497,7 +523,6 @@
     <div class="col-left" id="colLeft">
       <div class="col-left-header">Matters</div>
       <div id="mattersNavList"></div>
-      <button class="sign-out-btn" onclick="signOut()">Sign Out</button>
     </div>
 
     <div class="col-middle">
@@ -562,6 +587,40 @@
             <span id="notesStatusLabel">Private</span>
             <button class="submit-btn" onclick="commitNote()">Add to Matter</button>
           </div>
+        </div>
+
+        <div class="view" id="view-settings">
+          <h2>Settings</h2>
+
+          <div class="settings-section">
+            <div class="settings-label">Account</div>
+            <div class="settings-row">
+              <span id="settingsEmail">-</span>
+            </div>
+            <button class="settings-btn" onclick="changePassword()">Change Password</button>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-label">Vault PIN</div>
+            <button class="settings-btn" onclick="resetPin()">Change PIN</button>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-label">What I Remember</div>
+            <div id="episodesList" class="episodes-list"><div class="episodes-empty">Loading...</div></div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-label">Your Data</div>
+            <button class="settings-btn" onclick="exportAllData()">Export All Data ↓</button>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-label danger">Danger Zone</div>
+            <button class="settings-btn danger" onclick="deleteAccount()">Delete Account</button>
+          </div>
+
+          <button class="sign-out-btn" style="margin-top:24px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.08); width:100%;" onclick="signOut()">Sign Out</button>
         </div>
 
       </div>
@@ -663,6 +722,88 @@
   async function signOut(){
     await sb.auth.signOut();
     window.location.href = 'lineog-login.html';
+  }
+
+  async function changePassword(){
+    const { error } = await sb.auth.resetPasswordForEmail(currentUser.email);
+    if(error){
+      console.error('Could not send reset email', error);
+      alert('Something went wrong sending the reset email. Try again.');
+      return;
+    }
+    alert('Check your email, ' + currentUser.email + ', for a link to reset your password.');
+  }
+
+  async function loadEpisodes(){
+    const list = document.getElementById('episodesList');
+    const { data, error } = await sb
+      .from('episodes')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if(error){
+      list.innerHTML = '<div class="episodes-empty">Could not load this right now.</div>';
+      console.error('Could not load episodes', error);
+      return;
+    }
+    if(!data || data.length === 0){
+      list.innerHTML = '<div class="episodes-empty">Nothing logged yet.</div>';
+      return;
+    }
+    list.innerHTML = data.map(e => `
+      <div class="episode-item">
+        <div class="episode-date">${new Date(e.created_at).toLocaleString()}</div>
+        <div class="episode-msg">${escapeHtml(e.user_message)}</div>
+        <div class="episode-reply">${escapeHtml((e.ai_reply || '').slice(0, 140))}${(e.ai_reply || '').length > 140 ? '…' : ''}</div>
+      </div>
+    `).join('');
+  }
+
+  async function exportAllData(){
+    const [{ data: allFacts }, { data: allProjects }, { data: allRules }, { data: allEpisodes }] = await Promise.all([
+      sb.from('facts').select('*').eq('user_id', currentUser.id),
+      sb.from('projects').select('*').eq('user_id', currentUser.id),
+      sb.from('rules').select('*').eq('user_id', currentUser.id),
+      sb.from('episodes').select('*').eq('user_id', currentUser.id)
+    ]);
+    const exportData = {
+      exported_at: new Date().toISOString(),
+      facts: allFacts || [],
+      matters: allProjects || [],
+      rules: allRules || [],
+      episodes: allEpisodes || []
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'lineog-full-export.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function deleteAccount(){
+    const confirmed = confirm('This permanently deletes every matter, rule, fact, and note in your account. This cannot be undone. Are you sure?');
+    if(!confirmed) return;
+    const typed = prompt('Type DELETE to confirm.');
+    if(typed !== 'DELETE') return;
+
+    await Promise.all([
+      sb.from('facts').delete().eq('user_id', currentUser.id),
+      sb.from('projects').delete().eq('user_id', currentUser.id),
+      sb.from('rules').delete().eq('user_id', currentUser.id),
+      sb.from('notes').delete().eq('user_id', currentUser.id)
+    ]);
+
+    // Note: this removes all of the account's real data, everything it
+    // actually knows about you. Deleting the login itself, the auth
+    // account you sign in with, requires a small, separate server-side
+    // endpoint with elevated access that doesn't exist yet, that step
+    // is real, remaining work, not done by this function.
+    alert('Your data has been deleted. To fully close the account itself, contact support directly for now.');
+    await signOut();
   }
 
   // ---------- STATE ----------
@@ -1281,6 +1422,10 @@
       if(name === 'vault') unlockVault();
       if(name === 'rules') renderRules();
       if(name === 'projects') renderProjects();
+      if(name === 'settings'){
+        document.getElementById('settingsEmail').textContent = currentUser.email;
+        loadEpisodes();
+      }
     }
   }
 
@@ -1457,7 +1602,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: text, commits, rules, projectContext: activeProject,
-          recentHistory: messages.slice(-16),
+          recentHistory: messages.slice(-16), userId: currentUser.id,
           existingProjects: activeProject ? [] : projects.filter(p => p.status === 'active').map(p => ({ id: p.id, name: p.name }))
         })
       });
