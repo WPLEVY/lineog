@@ -3,6 +3,11 @@
 // are never sent to the browser, so the API key stays private here.
 
 import { rateLimit } from './_rateLimit.js';
+import { createClient } from '@supabase/supabase-js';
+
+const sbAdmin = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  : null;
 
 // Simple in-memory cache for identical, repeated questions.
 // Caveat, worth knowing: this resets whenever Vercel spins up a fresh
@@ -86,10 +91,25 @@ Task: ${task.trim()}`;
       return res.status(502).json({ error: 'Got an unexpected response. Try again.' });
     }
 
-    // Basic, free visibility: this shows up in Vercel's function logs
-    // (Project → Logs), giving you a real, if rough, sense of what people
-    // are asking and what gets recommended, with no extra service needed.
-    console.log('recommend:', normalized.slice(0, 120), '->', result.recommended);
+    // Real, structured logging, not just console output. This is what
+    // lets the tool eventually compound into something smarter, a
+    // console log rotates out and can't be queried or learned from.
+    let recommendationId = null;
+    if(sbAdmin){
+      const { data: logged, error: logError } = await sbAdmin
+        .from('tool_recommendations')
+        .insert({
+          task: task.trim().slice(0, 2000),
+          recommended: result.recommended,
+          runner_up: result.runnerUp ? result.runnerUp.name : null,
+          confidence: result.confidence || null
+        })
+        .select('id')
+        .single();
+      if(logError) console.error('Could not log recommendation', logError);
+      else recommendationId = logged.id;
+    }
+    result.recommendationId = recommendationId;
 
     cache.set(normalized, { result, time: Date.now() });
 

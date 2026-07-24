@@ -11,6 +11,17 @@
 // based on the kind of work involved, not a lookup table.
 
 import { rateLimit } from './_rateLimit.js';
+import { createClient } from '@supabase/supabase-js';
+
+// Server-side only, uses the service role key (never the anon key),
+// which bypasses RLS deliberately, this is a trusted write coming from
+// our own backend, not a user's browser. Requires SUPABASE_SERVICE_ROLE_KEY
+// to actually be set in Vercel's environment variables, a real, separate
+// credential from the anon key already used client-side, get it from
+// Supabase → Project Settings → API → service_role key.
+const sbAdmin = (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  : null;
 
 const PROVIDER_GUIDE = `When choosing which real provider best fits a specialist you're inventing, use these strengths:
 - Perplexity: current, local, or factual information that needs to be looked up (regulations, permit requirements, pricing, availability, anything time-sensitive or location-specific)
@@ -25,7 +36,7 @@ export default async function handler(req, res) {
 
   if (!rateLimit(req, res, { windowMs: 60000, maxRequests: 20 })) return;
 
-  const { message, commits, rules, projectContext, existingProjects, recentHistory } = req.body || {};
+  const { message, commits, rules, projectContext, existingProjects, recentHistory, userId } = req.body || {};
 
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
     return res.status(400).json({ error: 'Message is required.' });
@@ -40,7 +51,30 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server is not configured yet.' });
   }
 
-  const commitsText = (commits || []).map(c => {
+  // Real relevance ranking, not full semantic search (that's a genuine
+  // infrastructure decision involving a vector store, not something to
+  // silently bolt on here). This is an honest, working first step:
+  // score each commit by keyword overlap with the current message, plus
+  // a recency boost, and only send the most relevant, capped ones,
+  // instead of every fact ever committed, growing forever, every turn.
+  function scoreRelevance(commit, messageText){
+    const msgWords = new Set(messageText.toLowerCase().split(/\W+/).filter(w => w.length > 2));
+    const commitWords = (commit.label + ' ' + commit.value).toLowerCase().split(/\W+/).filter(w => w.length > 2);
+    let overlap = 0;
+    for(const w of commitWords){ if(msgWords.has(w)) overlap++; }
+    const ageMs = new Date() - new Date(commit.date);
+    const ageDays = ageMs / (1000 * 60 * 60 * 24);
+    const recencyBoost = ageDays < 7 ? 2 : ageDays < 30 ? 1 : 0;
+    return overlap * 3 + recencyBoost;
+  }
+
+  const MAX_COMMITS_IN_CONTEXT = 15;
+  const rankedCommits = (commits || [])
+    .map(c => ({ ...c, _score: scoreRelevance(c, message || '') }))
+    .sort((a, b) => b._score - a._score)
+    .slice(0, MAX_COMMITS_IN_CONTEXT);
+
+  const commitsText = rankedCommits.map(c => {
     const d = new Date(c.date);
     const isYesterday = (new Date() - d) < 2 * 24 * 60 * 60 * 1000 && (new Date() - d) > 12 * 60 * 60 * 1000;
     return `- ${c.label}: ${c.value} (committed ${isYesterday ? 'yesterday' : d.toLocaleDateString()})`;
@@ -169,6 +203,22 @@ Their message: ${message.trim()}`;
       complex: !!result.complex,
       timestamp: new Date().toISOString()
     }));
+
+    // Log the episode, real, structured history, not just what got
+    // explicitly committed. Only for simple replies here, a complex
+    // request's real final answer isn't assembled until synthesize.js
+    // runs afterward, that endpoint logs its own episode for those.
+    if(sbAdmin && userId && !result.complex && result.reply){
+      sbAdmin.from('episodes').insert({
+        user_id: userId,
+        project_id: projectContext ? projectContext.id : null,
+        user_message: message.trim(),
+        ai_reply: result.reply,
+        used_fact_labels: result.usedLabels || []
+      }).then(({ error }) => {
+        if(error) console.error('Could not log episode', error);
+      });
+    }
 
     return res.status(200).json(result);
 
